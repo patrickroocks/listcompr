@@ -5,31 +5,25 @@ The listcompr package is a light-weight collection of functions for list compreh
 ## Install it
 
 To install the latest version from this repository, execute the following in R:
-`
-install.packages("devtools")
-library(devtools)
 
-install_github("patrickroocks/rpref")
-library(rPref)
-`
+    install.packages("devtools")
+    library(devtools)
+
+    install_github("patrickroocks/rpref")
+    library(rPref)
 
 ## Examples
 
 A vector of all numbers in 1:10 which be divided by 3 or 4:
-`
-gen.vector(i, i = 1:10, i %% 3 == 0 || i %% 4 == 0)
-# Returns: [1] 3 4 6 8 9
-`
+
+    gen.vector(i, i = 1:10, i %% 3 == 0 || i %% 4 == 0)
+    # Returns: [1] 3 4 6 8 9
 
 A list of tupels (i,j) where i,j are from 1:3 and i<=j:
-`
-gen.list(c(i, j), i = 1:3, j = i:3)
-`
+    gen.list(c(i, j), i = 1:3, j = i:3)
 
 ## More examples
 
 Run
-`
-vignette("introduction", package = "listcompr")
-`
+    vignette("introduction", package = "listcompr")
 to see a vignette with some more examples.
