@@ -109,7 +109,7 @@ df <- gen.data.frame(c(a_1, ..., a_5), a_ = 1:5, sum(a_1, ..., a_5) == 10,
 knitr::kable(df)
 ```
 
-### Example: calculate all permulations
+### Example: calculate all permutations
 
 We can get all permutations of $(1, 2, 3, 4)$ (which are $4! = 24$) by using the following property of permutations: $\text{perm}(1, ..., n) = \{(a_1, ..., a_n) | a_i \in \{1, ..., n\}, a_i \neq a_j \; \text{for} \; i \neq j\}$. This can be expressed via (we show only the first 8 permutations):
 

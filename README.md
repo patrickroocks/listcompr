@@ -14,12 +14,12 @@ To install and load the latest version from this repository, execute the followi
 
 ## Examples
 
-A vector of all numbers in 1:10 which be divided by 3 or 4:
+Get a vector of all numbers in 1:10 which be divided by 3 or 4:
 
     gen.vector(i, i = 1:10, i %% 3 == 0 || i %% 4 == 0)
     ## Returns: c(3, 4, 6, 8, 9)
 
-A list of tupels (i,j) where i and j are from 1:3 and i <= j holds:
+Get a list of tuples (i,j) where i and j are from 1:3 and i <= j holds:
 
     gen.list(c(i, j), i = 1:3, j = i:3)
     ## Returns: list(c(1, 1), c(1, 2), c(2, 2), c(1, 3), c(2, 3), c(3, 3))

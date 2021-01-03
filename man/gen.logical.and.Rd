@@ -19,7 +19,7 @@ Functions to compose and-/or-connected logical conditions, based on variable ran
 }
 \details{
 Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{expr},
-where all free variables are substitued for which a range is given. The other variables remain untouched.
+where all free variables are substituted for which a range is given. The other variables remain untouched.
 
 It may be used within the the conditions of \code{\link{gen.list}} and similar functions from this package.
 }

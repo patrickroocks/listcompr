@@ -24,7 +24,7 @@
 #' 
 #' @details 
 #' 
-#' The result of \code{gen.list} is a list (a numeric vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substitued.
+#' The result of \code{gen.list} is a list (a numeric vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substituted.
 #' The function \code{gen.vector} returns a numeric vector while \code{gen.list} can contain not only numeric values but also more complex substructures (like vectors or lists).
 #' 
 #' The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
@@ -253,7 +253,7 @@ gen.named.vector.expr <- function(str, expr, ...) {
 #' @details
 #' 
 #' Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{expr},
-#' where all free variables are substitued for which a range is given. The other variables remain untouched.
+#' where all free variables are substituted for which a range is given. The other variables remain untouched.
 #' 
 #' It may be used within the the conditions of \code{\link{gen.list}} and similar functions from this package.
 #' 

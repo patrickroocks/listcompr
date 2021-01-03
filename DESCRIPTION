@@ -1,11 +1,12 @@
 Package: listcompr
-Version: 0.1
+Version: 0.1.0
 Date: 2021-01-03
 Title: List Comprehension for R
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>
 Description: Syntactic shortcuts for creating synthetic lists, vectors and 
     data frames. Inspired by the list comprehension capabilities from Python.
+URL: https://github.com/patrickroocks/listcompr
 Depends:
     R (>= 3.1.2)
 License: GPL (>= 2)

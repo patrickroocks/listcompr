@@ -33,7 +33,7 @@ Functions to transform a base expression containing free variables into a list, 
 based on variable ranges and additional conditions.
 }
 \details{
-The result of \code{gen.list} is a list (a numeric vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substitued.
+The result of \code{gen.list} is a list (a numeric vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substituted.
 The function \code{gen.vector} returns a numeric vector while \code{gen.list} can contain not only numeric values but also more complex substructures (like vectors or lists).
 
 The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
