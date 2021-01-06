@@ -70,7 +70,7 @@
 #' gen.data.frame(c(num = a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a %% x == 0))), 
 #'                a = 2:20)
 #' 
-#' # Return perfect numbers between 1 and 100 (number equals the sum of divisors)
+#' # Return perfect numbers between 2 and 100 (number equals the sum of divisors)
 #' gen.vector(a, a = 2:100, a == sum(gen.vector(x, x = 1:(a-1), a %% x == 0)))
 #' 
 #' @export
