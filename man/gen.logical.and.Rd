@@ -14,14 +14,19 @@ gen.logical.or(expr, ...)
 
 \item{...}{Arbitrary many variable ranges and conditions.}
 }
+\value{
+Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{expr},
+where all free variables are substituted for which a range is given. The other variables remain untouched.
+
+The generated condition may be used within the the conditions of \code{\link{gen.list}} and similar functions from this package.
+}
 \description{
 Functions to compose and-/or-connected logical conditions, based on variable ranges and additional conditions.
 }
 \details{
-Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{expr},
-where all free variables are substituted for which a range is given. The other variables remain untouched.
+See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
 
-It may be used within the the conditions of \code{\link{gen.list}} and similar functions from this package.
+For variables with underscores additionally the evaluation of indices in \code{()}-brackets is supported. For example, an expression \code{x_(i+1)} is evaluated as \code{x_3} for \code{i = 2}.
 }
 \examples{
 # Returns a_1 == 1 & a_2 == 2 & a_3 == 3

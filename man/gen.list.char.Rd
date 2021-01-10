@@ -19,27 +19,30 @@ gen.named.vector(str, expr, ...)
 gen.named.data.frame(str, expr, ...)
 }
 \arguments{
-\item{str}{A character pattern, containing expressions to be evaluated in \{\}-brackets. 
+\item{str}{A character pattern, containing expressions to be evaluated in \code{\{\}}-brackets. 
 Double brackets are transformed into a single bracket without evaluating the inner expression.
-For instance, \code{"var{x}_{{a}}"} is transformed into \code{"var1_{a}"} for \code{x=1}.}
+For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} for \code{x = 1}.}
 
 \item{...}{Arbitrary many variable ranges and conditions.}
 
 \item{expr}{A base expression containing free variables which is evaluated for all combinations of variables.}
+}
+\value{
+The functions \code{gen.list.char} and \code{gen.vector.char} return lists and vectors of characters.
+
+The functions \code{gen.named.list}, \code{gen.named.vector}, \code{gen.named.data.frame} return lists, vectors, and data frames.
+The work very similar to their counterparts without ".named".
+Additionally the vector of characters, induced by \code{str}, serves as a vector of names for the generated structures. 
+In case of lists or vectors, the result is a named list or a named vector. For data frames, the names are taken as row names.
 }
 \description{
 Functions to transform patterns with placeholders into characters or into names of lists, vectors, or data frames,
 based on variable ranges and additional conditions.
 }
 \details{
-The free variables in the inner expressions of \code{expr} are evaluated in the same way as described in \code{\link{gen.list}}.
+The free variables in the inner expressions (i.e., the content of the \code{\{\}}-brackets) of \code{expr} are evaluated in the same way as expressions in \code{\link{gen.list}}.
 
-
-The functions \code{gen.list.char} and \code{gen.vector.char} generate lists and vectors of characters.
-
-The functions \code{gen.named.list}, \code{gen.named.vector}, \code{gen.named.data.frame} are very similar to their counterparts without ".named".
-Additionally the vector of characters, induced by \code{str}, serves as a vector of names for the generated structures. 
-In case of lists or vectors, the result is a named list or a named vector. For data frames, the names are taken as row names.
+See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
 }
 \examples{
 # sum up 1:i for i in 1:5

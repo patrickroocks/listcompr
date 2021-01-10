@@ -23,17 +23,22 @@ It may still contain free variables.}
 
 \item{str}{A character pattern, containing expressions to be evaluated in \{\}-brackets.}
 }
+\value{
+Returns an expression containing a list or a vector which might be evaluated later.
+The argument \code{expr} is partially evaluated, where all free variables are substituted for which a range is given.
+The other variables remain untouched.
+}
 \description{
 Functions to transform a base expression containing free variables into a list or a vector of expressions,
 based on variable ranges and additional conditions.
 }
 \details{
-Works similar to \code{\link{gen.list}} and \code{\link{gen.vector}}, but returns expressions to be evaluated later.
-The argument \code{expr} is partially evaluated, where all free variables are substituted for which a range is given.
-The other variables remain untouched.
+See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
 
-It may be especially useful to use the index notation for variables ending with an underscore.
-For instance, \code{a_(i+1)} is evaluated to \code{a_4} for \code{i = 3}.
+See \code{\link{gen.named.list}} for more details on the \code{str} parameter.
+
+For variables with underscores additionally the evaluation of indices in \code{()}-brackets is supported.
+For example, an expression \code{x_(i+1)} is evaluated as \code{x_3} for \code{i = 2}.
 }
 \examples{
 # An expression which is partially evaluated

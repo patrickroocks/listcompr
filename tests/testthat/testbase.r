@@ -127,8 +127,8 @@ test_that("helper function tests", {
 })
 
 test_that("lambda function test", {
-  expect_equal(gen.data.frame(c(num = a, sumdiv = {tmp <<- sum(gen.vector(x, x = 1:(a-1), a %% x == 0))}, perfect = tmp == a), a = 3:6),
-               data.frame(num = c(3, 4, 5, 6), sumdiv = c(1, 3, 1, 6), perfect = c(0, 0, 0, 1)))
+  expect_equal(gen.data.frame(c(num = a, sumdiv = {sum(gen.vector(x, x = 1:(a-1), a %% x == 0))}), a = 3:6),
+               data.frame(num = c(3, 4, 5, 6), sumdiv = c(1, 3, 1, 6)))
 })
 
 test_that("chained start/stop tests", {
@@ -167,7 +167,7 @@ test_that("character tests", {
   expect_equal(gen.vector.char("{i}{j}, {x}", i = 1:2, j = i:2), c("11, 1", "12, 1", "22, 1"))
   expect_equal(gen.vector.char("{x+y}", x = 10:11, y = x:11), c("20", "21", "22"))
   
-  expect_equal(gen.vector.char("{a <<- i; return(i+1)}_{a}", i = 1:2), c("2_1", "3_2"))
+  expect_equal(gen.vector.char("{i+1}_{i}", i = 1:2), c("2_1", "3_2"))
   expect_equal(gen.vector.char("{{a}}", i = 1:2), c("{{a}}", "{{a}}"))
 })
 
