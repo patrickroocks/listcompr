@@ -19,7 +19,7 @@ gen.named.vector(str, expr, ...)
 gen.named.data.frame(str, expr, ...)
 }
 \arguments{
-\item{str}{A character pattern, containing expressions to be evaluated in \code{\{\}}-brackets. 
+\item{str}{A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
 Double brackets are transformed into a single bracket without evaluating the inner expression.
 For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} for \code{x = 1}.}
 

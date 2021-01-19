@@ -14,7 +14,7 @@
 #' Expected structure of \code{expr}:
 #'  \itemize{
 #'    \item For \code{gen.list} it may have arbitrary structure (including a list).
-#'    \item For \code{gen.vector} a scalar (i.e., a numeric value of length 1) is expected.
+#'    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
 #'    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
 #'      Default names 'V1', 'V2', ... are used, if no names are given.
 #'   }
@@ -27,8 +27,8 @@
 #' 
 #' @return 
 #' 
-#' The result of \code{gen.list} is a list (a numeric vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substituted.
-#' The function \code{gen.vector} returns a numeric vector while \code{gen.list} can contain not only numeric values but also more complex substructures (like vectors or lists).
+#' The result of \code{gen.list} is a list (a vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substituted.
+#' The function \code{gen.vector} returns a vector while \code{gen.list} may contain also more complex substructures (like vectors or lists).
 #' 
 #' The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
 #' The base expression \code{expr} should contain a vector or list (a named vector/list if the columns shall be named), such that each entry of this vector becomes a column of the returned data frame.
@@ -110,7 +110,7 @@ gen.data.frame <- function(expr, ...) {
 #' 
 #' @name gen.list.char
 #' 
-#' @param str A character pattern, containing expressions to be evaluated in \code{\{\}}-brackets. 
+#' @param str A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
 #'   Double brackets are transformed into a single bracket without evaluating the inner expression.
 #'   For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} for \code{x = 1}.
 #' @param expr A base expression containing free variables which is evaluated for all combinations of variables. 
@@ -542,7 +542,7 @@ adjust_limits <- function(vars, parent_frame) {
     
     show_err <- function(detail_err) {
       stop(paste0("could not evaluate variable range of '", varname, "', got '", as.character(as.expression(expr)), 
-                  "', expected something like start_expr:end_expr, ", detail_err), call. = FALSE)
+                  "', ", detail_err), call. = FALSE)
     }
     
     # returns NULL if it cannot be evaluated yet
@@ -552,19 +552,19 @@ adjust_limits <- function(vars, parent_frame) {
         fixed_vals[[varname]] <- evaled_expr
         final_vars[[varname]] <- evaled_expr
         varnames <- setdiff(varnames, varname) # can be savely evaluated now!
-      } else if (length(evaled_expr) > 1 && is.numeric(evaled_expr)) {
-        # check for i=start:end (valid for start/stop)
-        # evaluation in baseenv suffices, as operands are already evaluated!
-        range_expr <- create_range_expr(evaled_expr[1], evaled_expr[length(evaled_expr)])
-        if (identical(eval(range_expr, baseenv()), evaled_expr)) {
-          # don't accept i=3:1 (== [3,2,1]), then j=i:2 could not be transformed to conditions. accept seq(1,5,2) (== [1,3,5])
-          starts[varname] <- evaled_expr[1]
-          stops[varname] <- evaled_expr[length(evaled_expr)]
+      } else {
+        if (is.numeric(evaled_expr)) {
+          # check for i=start:end (valid for start/stop)
+          # evaluation in baseenv suffices, as operands are already evaluated!
+          range_expr <- create_range_expr(evaled_expr[1], evaled_expr[length(evaled_expr)])
+          if (identical(eval(range_expr, baseenv()), evaled_expr)) {
+            # don't accept i=3:1 (== [3,2,1]), then j=i:2 could not be transformed to conditions. accept seq(1,5,2) (== [1,3,5])
+            starts[varname] <- evaled_expr[1]
+            stops[varname] <- evaled_expr[length(evaled_expr)]
+          }
         }
         final_vars[[varname]] <- expr # don't replace expression by 1:n
-      } else {
-        show_err('did not find numeric vector')
-      }
+      } 
     } else if (length(expr) == 3 && expr[[1]] == quote(`:`)) {
       # do not replace in seq(...), step distance 2 can't be translated in conditions for cartesian product
       # no var range found yet, assume that the expression contains free vars
@@ -613,6 +613,7 @@ get_cartesian_df_after_expansion <- function(vars_lst, cond_lst, parent_frame) {
   extra_conditions <- res[[2]]
   
   vars_lst <- vars_lst[sort(names(vars_lst))]
+  vars_lst[["stringsAsFactors"]] <- FALSE # for non-numeric vars
 
   # Cartesian product of free vars via expand.grid
   cartesian_df <- do.call(expand.grid, vars_lst, envir = parent_frame)
@@ -866,9 +867,14 @@ gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_
   
   # * Apply expression and return
   if (output_format == OUTPUT_FORMAT$NUM) {
-    apply_func <- { if (use_vec) function(X, FUN) vapply(X, FUN, 0) 
-                    else         function(X, FUN) lapply(X, FUN) }
-    rv <- apply_func(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
+    if (use_vec) {
+      rv <- eval(expr, cartesian_df[1,,drop=FALSE], parent_frame)
+      if (nrow(cartesian_df) > 1) {
+        rv <- c(rv, vapply(2:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), rv))
+      }
+    } else {
+      rv <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
+    }
     if (!is.null(name_str)) names(rv) <- name_vec
     return(rv)
     

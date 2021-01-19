@@ -171,3 +171,7 @@ test_that("character tests", {
   expect_equal(gen.vector.char("{{a}}", i = 1:2), c("{{a}}", "{{a}}"))
 })
 
+test_that("non-numeric test", {
+  expect_equal(gen.vector(m, m = month.abb, substr(m, 1, 1) == 'J'), c("Jan", "Jun", "Jul"))
+  expect_equal(gen.list(m, m = month.abb, substr(m, 1, 1) == 'J'), list("Jan", "Jun", "Jul"))
+})

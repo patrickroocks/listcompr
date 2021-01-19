@@ -19,7 +19,7 @@ gen.data.frame(expr, ...)
 Expected structure of \code{expr}:
  \itemize{
    \item For \code{gen.list} it may have arbitrary structure (including a list).
-   \item For \code{gen.vector} a scalar (i.e., a numeric value of length 1) is expected.
+   \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
      Default names 'V1', 'V2', ... are used, if no names are given.
   }
@@ -32,8 +32,8 @@ The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} is allowed.
 The generated values can be further restricted by conditions (like \code{x <= y}).}
 }
 \value{
-The result of \code{gen.list} is a list (a numeric vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substituted.
-The function \code{gen.vector} returns a numeric vector while \code{gen.list} can contain not only numeric values but also more complex substructures (like vectors or lists).
+The result of \code{gen.list} is a list (a vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substituted.
+The function \code{gen.vector} returns a vector while \code{gen.list} may contain also more complex substructures (like vectors or lists).
 
 The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
 The base expression \code{expr} should contain a vector or list (a named vector/list if the columns shall be named), such that each entry of this vector becomes a column of the returned data frame.
