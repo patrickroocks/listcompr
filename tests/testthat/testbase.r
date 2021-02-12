@@ -175,3 +175,11 @@ test_that("non-numeric test", {
   expect_equal(gen.vector(m, m = month.abb, substr(m, 1, 1) == 'J'), c("Jan", "Jun", "Jul"))
   expect_equal(gen.list(m, m = month.abb, substr(m, 1, 1) == 'J'), list("Jan", "Jun", "Jul"))
 })
+
+test_that("sorting", {
+  expect_equal(gen.data.frame(c(x_1 = x_1, x_2 = x_2), x_ = 1:2, x_2 = 1:2), data.frame(x_1 = c(1L, 2L, 1L, 2L), x_2 = c(1L, 1L, 2L, 2L)))
+  expect_equal(gen.data.frame(c(a = a, b = b), a = 1:2, b = 1:2), data.frame(a = c(1L, 2L, 1L, 2L), b = c(1L, 1L, 2L, 2L)))
+  expect_equal(gen.data.frame(c(a = a, b = b), b = 1:2, a = 1:2), data.frame(a = c(1L, 1L, 2L, 2L), b = c(1L, 2L, 1L, 2L)))
+  expect_equal(gen.data.frame(c(x_1 = x_1, x_2 = x_2, a = a), x_ = 1:2, a = 1:2, x_1 = 1:2), 
+               data.frame(x_1 = c(1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L), x_2 = c(1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L), a = c(1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L)))
+})

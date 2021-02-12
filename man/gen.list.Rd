@@ -53,6 +53,13 @@ There are several syntactic features to be used in variable ranges, conditions, 
 A range for a variable ending with an underscore (like \code{x_}) defines a set of ranges affecting all variables named \code{{varname}_{index}}, e.g. \code{x_1}.
 For instance, in \code{gen.vector(x_1 + x_2 + x_3, x_ = 1:5)} the variables \code{x_1, x_2, x_3} are all ranging in \code{1:5}.
 This can be overwritten for each single \code{x_i}, e.g., an additional argument \code{x_3 = 1:3} assigns the range \code{1:3} to \code{x_3} while \code{x_1} and \code{x_2} keep the range \code{1:5}.
+A group of indexed variables is kept always sorted according to the position of the main variable \code{{varname}_}. 
+For instance, the two following statements produce the same results:
+  
+\itemize{
+  \item \code{gen.vector(x_1 + x_2 + a, x_ = 1:5, a = 1:2, x_1 = 1:2)}
+  \item \code{gen.vector(x_1 + x_2 + a, x_1 = 1:2, x_2 = 1:5, a = 1:2)}
+}
 
 Expressions and conditions support a \code{...}-notation which works as follows:
 

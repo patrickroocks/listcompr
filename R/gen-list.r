@@ -43,6 +43,13 @@
 #' A range for a variable ending with an underscore (like \code{x_}) defines a set of ranges affecting all variables named \code{{varname}_{index}}, e.g. \code{x_1}.
 #' For instance, in \code{gen.vector(x_1 + x_2 + x_3, x_ = 1:5)} the variables \code{x_1, x_2, x_3} are all ranging in \code{1:5}.
 #' This can be overwritten for each single \code{x_i}, e.g., an additional argument \code{x_3 = 1:3} assigns the range \code{1:3} to \code{x_3} while \code{x_1} and \code{x_2} keep the range \code{1:5}.
+#' A group of indexed variables is kept always sorted according to the position of the main variable \code{{varname}_}. 
+#' For instance, the two following statements produce the same results:
+#'   
+#' \itemize{
+#'   \item \code{gen.vector(x_1 + x_2 + a, x_ = 1:5, a = 1:2, x_1 = 1:2)}
+#'   \item \code{gen.vector(x_1 + x_2 + a, x_1 = 1:2, x_2 = 1:5, a = 1:2)}
+#' }
 #' 
 #' Expressions and conditions support a \code{...}-notation which works as follows:
 #' 
@@ -604,15 +611,27 @@ adjust_limits <- function(vars, parent_frame) {
 
 get_cartesian_df_after_expansion <- function(vars_lst, cond_lst, parent_frame) {
   
-  # remove generic matching free vars
-  vars_lst <- vars_lst[which(substr(names(vars_lst), nchar(names(vars_lst)), nchar(names(vars_lst))) != '_')]
+  # sort (x_, a, b, x_1, x_2) to (x_1, x_2, a, b), i.e., the "x_" variable defines the position
+  # and the generic matching free vars like "x_" are removed
+  while (TRUE) {
+    # pick one generic (like "x_") if existing
+    inds <- which(substr(names(vars_lst), nchar(names(vars_lst)), nchar(names(vars_lst))) == '_')
+    if (length(inds) == 0) break
+    cur_ind <- inds[1]
+    generic_name <- names(vars_lst)[cur_ind]
+    # preserve all others left/right of it, sort the generics
+    ind_no_generic <- which(substr(names(vars_lst), 1, nchar(generic_name)) != generic_name)
+    ind_no_generic_left  <- ind_no_generic[ind_no_generic < cur_ind]
+    ind_no_generic_right <- ind_no_generic[ind_no_generic > cur_ind]
+    generic_vars <- vars_lst[setdiff(which(substr(names(vars_lst), 1, nchar(generic_name)) == generic_name), cur_ind)]
+    vars_lst <- c(vars_lst[ind_no_generic_left], generic_vars[sort(names(generic_vars))], vars_lst[ind_no_generic_right])
+  }
   
   # adjust the limits (x = a:b, y = x:c) to (x = a:b, y = a:b, y <= x)
   res <- adjust_limits(vars_lst, parent_frame)
   vars_lst <- res[[1]]
   extra_conditions <- res[[2]]
   
-  vars_lst <- vars_lst[sort(names(vars_lst))]
   vars_lst[["stringsAsFactors"]] <- FALSE # for non-numeric vars
 
   # Cartesian product of free vars via expand.grid
