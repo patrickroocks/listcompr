@@ -126,7 +126,7 @@ knitr::kable(df[1:8,])
 The list comprehension functions of **listcompr** can also be nested. In the following example we use `gen.data.frame` as the outer function and `gen.vector` (within a sum) to generate a data frame of the sum of all divisors of a whole number (the number itself excluded):
 
 ```{r, results='asis'}
-df <- gen.data.frame(c(a = a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a %% x == 0))), a = 2:10)
+df <- gen.data.frame(c(a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a %% x == 0))), a = 2:10)
 knitr::kable(df)
 ```
 

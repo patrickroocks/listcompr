@@ -16,7 +16,6 @@
 #'    \item For \code{gen.list} it may have arbitrary structure (including a list).
 #'    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
 #'    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
-#'      Default names 'V1', 'V2', ... are used, if no names are given.
 #'   }
 #'   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.
 #' @param ... Arbitrary many variable ranges and conditions.
@@ -31,7 +30,9 @@
 #' The function \code{gen.vector} returns a vector while \code{gen.list} may contain also more complex substructures (like vectors or lists).
 #' 
 #' The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
-#' The base expression \code{expr} should contain a vector or list (a named vector/list if the columns shall be named), such that each entry of this vector becomes a column of the returned data frame.
+#' The base expression \code{expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
+#' If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
+#' Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
 #' 
 #' All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
 #' For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.
@@ -74,8 +75,8 @@
 #' # Compose 10, 11, 20, 21, 22, 30, ..., 33, ..., 90, ..., 99 into a vector
 #' gen.vector(x * 10 + y, x = 1:9, y = 1:x)
 #' 
-#' # A data frame of all tuples (a_1, a_2, a_3) of whole positive numbers, summing up to 10
-#' gen.data.frame(c(a_1 = x_1, ..., a_3 = x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
+#' # A data frame of all tuples (x_1, x_2, x_3) of whole positive numbers, summing up to 10
+#' gen.data.frame(c(x_1, ..., x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
 #' 
 #' # A data.frame containing the numbers in 2:20 and the sum of their divisors
 #' gen.data.frame(c(num = a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a %% x == 0))), 
@@ -503,6 +504,34 @@ expand_expr <- function(expr, vars, ctx) {
   return(list(expr, vars))
 }
 
+# add default names, e.g. convert quote(c(a = 1, b)) to quote(c(a = 1, b = 2))
+insert_names <- function(expr) {
+  if (is.symbol(expr)) { # single symbol
+    new_expr <- quote(c(X = X))
+    names(new_expr)[2] <- as.character(expr)
+    new_expr[2][[1]] <- expr
+    return(new_expr)
+  }
+  if (length(expr) <= 1 || (expr[[1]] != quote(c) && expr[[1]] != quote(list))) return(expr) # nothing to detect
+  if (length(names(expr)) == length(expr) && sum(names(expr) == "") == 1) return(expr) # all names set
+  
+  # already set names
+  res_names <- names(expr)
+  if (is.null(res_names)) res_names <- rep("", length(expr))
+  
+  # derive names from expr: accept only something like "a", not "1" (would be converted to "X1")
+  # ensure that set names are persisted, quote(a = 1, a) stays at it is (final columns "a" and "V2" are intended)
+  tmp_names <- as.character(expr)
+  tmp_names[res_names != ""] <- res_names[res_names != ""]
+  tmp_names[tmp_names != make.names(tmp_names, TRUE)] <- ""
+  tmp_names[1] <- ""
+  
+  # fill unset names
+  res_names[res_names == ""] <- tmp_names[res_names == ""]
+  names(expr) <- res_names
+  return(expr)
+}
+
 # ----- Variable range, conditions and Cartesian product -------
 
 # prepare variable limits for Cartesian product. turns "x=1:n, y=x:m" into "x=1:n,y=1:m, y>=x"
@@ -911,6 +940,7 @@ gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_
     return(apply_func(1:nrow(cartesian_df), function(i) eval_char_pattern(char_pattern_expr, cartesian_df[i,,drop=FALSE], parent_frame)))
     
   } else if (output_format == OUTPUT_FORMAT$DF) {
+    if (is.null(name_str)) expr <- insert_names(expr)
     rv_list <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
     if (!is.null(name_str)) names(rv_list) <- name_vec
     return(as.data.frame(do.call("rbind", rv_list)))

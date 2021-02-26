@@ -21,7 +21,6 @@ Expected structure of \code{expr}:
    \item For \code{gen.list} it may have arbitrary structure (including a list).
    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
-     Default names 'V1', 'V2', ... are used, if no names are given.
   }
   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.}
 
@@ -36,7 +35,9 @@ The result of \code{gen.list} is a list (a vector for \code{gen.vector}) contain
 The function \code{gen.vector} returns a vector while \code{gen.list} may contain also more complex substructures (like vectors or lists).
 
 The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
-The base expression \code{expr} should contain a vector or list (a named vector/list if the columns shall be named), such that each entry of this vector becomes a column of the returned data frame.
+The base expression \code{expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
+If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
+Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
 
 All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
 For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.
@@ -80,8 +81,8 @@ The conditions may contain itself list comprehension expressions, e.g., \code{\l
 # Compose 10, 11, 20, 21, 22, 30, ..., 33, ..., 90, ..., 99 into a vector
 gen.vector(x * 10 + y, x = 1:9, y = 1:x)
 
-# A data frame of all tuples (a_1, a_2, a_3) of whole positive numbers, summing up to 10
-gen.data.frame(c(a_1 = x_1, ..., a_3 = x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
+# A data frame of all tuples (x_1, x_2, x_3) of whole positive numbers, summing up to 10
+gen.data.frame(c(x_1, ..., x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
 
 # A data.frame containing the numbers in 2:20 and the sum of their divisors
 gen.data.frame(c(num = a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a \%\% x == 0))), 

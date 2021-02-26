@@ -49,7 +49,6 @@ test_that("Logical list tests", {
   expect_equal(gen.data.frame(c(a = x_1, b = x_2, c = x_3), x_ = 1:2, gen.logical.or(x_i != x_j, i=1:3, j=1:3)),
                data.frame(a = c(2,1,2,1,2,1), b = c(1,2,2,1,1,2), c = c(1,1,1,2,2,2)))
   
-  
   expect_equal(gen.list(c(x_1, ..., x_4), x_ = 1:2, gen.logical.and(x_i == x_j, i = 1:4, j=(i+1):4)), list(c(1,1,1,1),c(2,2,2,2)))
   
   expect_equal(gen.list(c(x_1, ..., x_4), x_ = 0:-1, gen.logical.and(x_(i_1) == x_(i_2), i_ = 4:1, i_1 > i_2)), list(c(0,0,0,0),c(-1,-1,-1,-1)))
@@ -65,6 +64,11 @@ test_that("Basic data frame tests", {
   
   expect_equal(gen.data.frame(c(a = a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a %% x == 0))), a = 2:10), 
                data.frame(a = c(2, 3, 4, 5, 6, 7, 8, 9, 10), sumdiv = c(1, 1, 3, 1, 6, 1, 7, 4, 8)))
+  
+  expect_equal(gen.data.frame(c(a, 1 + 2), a = 1:2), data.frame(a = c(1, 2), V2 = 3))
+  expect_equal(gen.data.frame(c(x = a, b), a = 1:2, b = 1), data.frame(x = c(1, 2), b = 1))
+  expect_equal(gen.data.frame(c(b = a, b), a = 1:2, b = 1), data.frame(b = c(1, 2), V2 = 1))
+  expect_equal(gen.data.frame(a, a = 1:5),  data.frame(a = 1:5))
 })
 
 test_that("Named lists/vectors/dataframes tests", {
@@ -91,9 +95,7 @@ test_that("Named lists/vectors/dataframes tests", {
 })
 
 test_that("three dots tests", {
-  df_res <- expand.grid(list(1:2,1:2,1:2), KEEP.OUT.ATTRS = FALSE)
-  names(df_res) <- c("V1", "V2", "V3")
-  expect_equal(gen.data.frame(c(i_1, ..., i_3), i_ = 1:2), df_res)
+  expect_equal(gen.data.frame(c(i_1, ..., i_3), i_ = 1:2), expand.grid(list(i_1 = 1:2, i_2 = 1:2, i_3 = 1:2), KEEP.OUT.ATTRS = FALSE))
   expect_equal(gen.vector(sum(c(i_1, ..., i_4)), i_ = 0:1), c(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4))
   expect_equal(gen.vector(sum(i_1, ..., i_4),    i_ = 0:1), c(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4))
   
@@ -138,7 +140,7 @@ test_that("chained start/stop tests", {
   expect_equal(gen.data.frame(c(a = x, b = y), x = 1:2, y = x:3), data.frame(a = c(1, 1, 2, 1, 2), b = c(1, 2, 2, 3, 3)))
   x <- 1
   y <- 1 # may not influence the list comprehension
-  expect_equal(gen.data.frame(c(a = x, b = y), x = 1:2, y = x:3), data.frame(a = c(1, 1, 2, 1, 2), b = c(1, 2, 2, 3, 3)))
+  expect_equal(gen.data.frame(c(x, y), x = 1:2, y = x:3), data.frame(x = c(1, 1, 2, 1, 2), y = c(1, 2, 2, 3, 3)))
 })
 
 test_that("seq tests", {
