@@ -121,6 +121,18 @@ knitr::kable(df[1:8,])
 
 *Note:* Don't use such an approach for creating large data sets of permutations, e.g., for all the 5040 permutations of `1:7`. This approach is very slow! We recommend the `permn` function from the [combinat](https://CRAN.R-project.org/package=combinat) package.
 
+### Using generated conditions within dplyr
+
+Conditions created with `gen.logical.and` or `gen.logical.or` can be used in other R packages, e.g., [dplyr](https://dplyr.tidyverse.org/). To use a generated condition in, e.g., `dplyr::filter` you need to put the operator `!!` in front of the function which generates the condition. 
+
+For example, assume you have a data frame with the result of throwing three dices. You want to get the outcomes where at least two dices show the number 6. We show only the first 8 results:
+
+```{r, results='asis'}
+dices <- gen.data.frame(c(a_1, ..., a_3), a_ = 1:6)
+res <- dplyr::filter(dices, !!gen.logical.or(a_i == 6 & a_j == 6, i = 1:3, j = (i+1):3))
+knitr::kable(res[1:8,])
+```
+
 ### Nested list and vector comprehensions {#ex2}
 
 The list comprehension functions of **listcompr** can also be nested. In the following example we use `gen.data.frame` as the outer function and `gen.vector` (within a sum) to generate a data frame of the sum of all divisors of a whole number (the number itself excluded):

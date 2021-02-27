@@ -302,7 +302,8 @@ gen.logical.and <- function(expr, ...) {
   return(gen_logical_internal(expr, l, TRUE, parent.frame()))
 }
 
-#' @rdname gen.logical.and 
+#' @rdname gen.logical.and
+#' @export
 gen.logical.or <- function(expr, ...) {
   expr <- substitute(expr)
   l <- substitute(list(...))

@@ -36,11 +36,11 @@ Next we want to compose a list of tuples `c(i, j)` where `i` and `j` are from `1
 There is also a function to compose a data frame which expects a named vector as base expression.
 For example we can easily sum up `1:i` while iterating over `i`:
 
-    gen.data.frame(c(n = a, sum = sum(1:a)), a = 1:10)
+    gen.data.frame(c(a, sum = sum(1:a)), a = 1:10)
 
 The first three lines of this data frame are:
 
-            n sum
+            a sum
         1   1   1
         2   2   3
         3   3   6
