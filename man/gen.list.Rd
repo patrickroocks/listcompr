@@ -27,7 +27,7 @@ Expected structure of \code{expr}:
 \item{...}{Arbitrary many variable ranges and conditions.
 For all free variables occurring in \code{expr} a range must be assigned, e.g., \code{x = 1:3, y = 1:5} for an expression \code{x + y}. 
 At least one variable range is required.
-The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} is allowed.
+The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} or a substitution like \code{x = 1:3, y = 2 * x} is allowed.
 The generated values can be further restricted by conditions (like \code{x <= y}).}
 }
 \value{
@@ -81,15 +81,16 @@ The conditions may contain itself list comprehension expressions, e.g., \code{\l
 # Compose 10, 11, 20, 21, 22, 30, ..., 33, ..., 90, ..., 99 into a vector
 gen.vector(x * 10 + y, x = 1:9, y = 1:x)
 
-# A data frame of all tuples (x_1, x_2, x_3) of whole positive numbers, summing up to 10
+# A list containing vectors [1], [1, 2], [1, 2, 3], ...
+gen.list(gen.vector(i, i = 1:n), n = 1:10)
+
+# A data frame of tuples (x_1, x_2, x_3) summing up to 10
 gen.data.frame(c(x_1, ..., x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
 
-# A data.frame containing the numbers in 2:20 and the sum of their divisors
-gen.data.frame(c(num = a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a \%\% x == 0))), 
-               a = 2:20)
-
-# Return perfect numbers between 2 and 100 (number equals the sum of divisors)
-gen.vector(a, a = 2:100, a == sum(gen.vector(x, x = 1:(a-1), a \%\% x == 0)))
+# A data.frame containing the numbers in 2:20, the sum of their divisors
+# and a flag if they are "perfect" (sum of divisors equals the number)
+gen.data.frame(c(n, sumdiv, perfect = (n == sumdiv)), n = 2:20, 
+               sumdiv = sum(gen.vector(x, x = 1:(n-1), n \%\% x == 0)))
 
 }
 \seealso{

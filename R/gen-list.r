@@ -21,7 +21,7 @@
 #' @param ... Arbitrary many variable ranges and conditions.
 #'   For all free variables occurring in \code{expr} a range must be assigned, e.g., \code{x = 1:3, y = 1:5} for an expression \code{x + y}. 
 #'   At least one variable range is required.
-#'   The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} is allowed.
+#'   The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} or a substitution like \code{x = 1:3, y = 2 * x} is allowed.
 #'   The generated values can be further restricted by conditions (like \code{x <= y}).
 #' 
 #' @return 
@@ -75,15 +75,16 @@
 #' # Compose 10, 11, 20, 21, 22, 30, ..., 33, ..., 90, ..., 99 into a vector
 #' gen.vector(x * 10 + y, x = 1:9, y = 1:x)
 #' 
-#' # A data frame of all tuples (x_1, x_2, x_3) of whole positive numbers, summing up to 10
+#' # A list containing vectors [1], [1, 2], [1, 2, 3], ...
+#' gen.list(gen.vector(i, i = 1:n), n = 1:10)
+#' 
+#' # A data frame of tuples (x_1, x_2, x_3) summing up to 10
 #' gen.data.frame(c(x_1, ..., x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
 #' 
-#' # A data.frame containing the numbers in 2:20 and the sum of their divisors
-#' gen.data.frame(c(num = a, sumdiv = sum(gen.vector(x, x = 1:(a-1), a %% x == 0))), 
-#'                a = 2:20)
-#' 
-#' # Return perfect numbers between 2 and 100 (number equals the sum of divisors)
-#' gen.vector(a, a = 2:100, a == sum(gen.vector(x, x = 1:(a-1), a %% x == 0)))
+#' # A data.frame containing the numbers in 2:20, the sum of their divisors
+#' # and a flag if they are "perfect" (sum of divisors equals the number)
+#' gen.data.frame(c(n, sumdiv, perfect = (n == sumdiv)), n = 2:20, 
+#'                sumdiv = sum(gen.vector(x, x = 1:(n-1), n %% x == 0)))
 #' 
 #' @export
 gen.list <- function(expr, ...) {
@@ -535,7 +536,17 @@ insert_names <- function(expr) {
 
 # ----- Variable range, conditions and Cartesian product -------
 
+# apply expr to Cartesian product, independent of return type (e.g. char or num)
+apply_to_cartesian <- function(expr, cartesian_df, parent_frame) {
+  rv <- eval(expr, cartesian_df[1,,drop=FALSE], parent_frame)
+  if (nrow(cartesian_df) > 1) {
+    rv <- c(rv, vapply(2:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), rv))
+  }
+  return(rv)
+}
+
 # prepare variable limits for Cartesian product. turns "x=1:n, y=x:m" into "x=1:n,y=1:m, y>=x"
+# allow substitutions like "x=1:n, y=2*x"
 adjust_limits <- function(vars, parent_frame) {
   
   if (length(vars) == 0) return(list(list(), list()))
@@ -568,6 +579,7 @@ adjust_limits <- function(vars, parent_frame) {
   
   varnames <- names(vars)
   additional_conditions <- list()
+  sub_vars <- list()
   final_vars <- list()
   fixed_vals <- list()
   starts <- list()
@@ -633,10 +645,11 @@ adjust_limits <- function(vars, parent_frame) {
       stops[varname]  <- evaled_stop_expr
       final_vars[[varname]] <- create_range_expr(evaled_start_expr, evaled_stop_expr)
     } else {
-      show_err("did not find ':' operator")
+      # assume a substitution
+      sub_vars[varname] <- as.expression(expr)
     }
   }
-  return(list(final_vars, additional_conditions))
+  return(list(final_vars, additional_conditions, sub_vars))
 }
 
 get_cartesian_df_after_expansion <- function(vars_lst, cond_lst, parent_frame) {
@@ -661,21 +674,31 @@ get_cartesian_df_after_expansion <- function(vars_lst, cond_lst, parent_frame) {
   res <- adjust_limits(vars_lst, parent_frame)
   vars_lst <- res[[1]]
   extra_conditions <- res[[2]]
+  sub_vars <- res[[3]]
   
   vars_lst[["stringsAsFactors"]] <- FALSE # for non-numeric vars
 
   # Cartesian product of free vars via expand.grid
   cartesian_df <- do.call(expand.grid, vars_lst, envir = parent_frame)
   
-  # Non vector-wise applier of a single condition
-  applier <- function(expr) {
-    vapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), TRUE)
+  # quick exit?
+  if (nrow(cartesian_df) == 0) return(cartesian_df)
+  
+  # apply substitutions first
+  if (length(sub_vars) >= 1) {
+    for (i in 1:length(sub_vars)) {
+      cartesian_df[names(sub_vars)[i]] <- apply_to_cartesian(sub_vars[[i]], cartesian_df, parent_frame)
+    }
   }
   
   # Apply all conditions (given conditions + from adjusted limits), and-connect them
   lst_args <- c(cond_lst, extra_conditions)
   if (length(lst_args) > 0) {
-    cartesian_df <- cartesian_df[Reduce("&", lapply(lst_args, applier), TRUE),,drop = FALSE]
+    # Non-vector-wise applier of a single condition
+    condition_applier <- function(expr) {
+      vapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), TRUE)
+    }
+    cartesian_df <- cartesian_df[Reduce("&", lapply(lst_args, condition_applier), TRUE),,drop = FALSE]
   }
   
   return(cartesian_df) 
@@ -917,10 +940,7 @@ gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_
   # * Apply expression and return
   if (output_format == OUTPUT_FORMAT$NUM) {
     if (use_vec) {
-      rv <- eval(expr, cartesian_df[1,,drop=FALSE], parent_frame)
-      if (nrow(cartesian_df) > 1) {
-        rv <- c(rv, vapply(2:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), rv))
-      }
+      rv <- apply_to_cartesian(expr, cartesian_df, parent_frame)
     } else {
       rv <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
     }

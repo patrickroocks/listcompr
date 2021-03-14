@@ -145,9 +145,9 @@ test_that("chained start/stop tests", {
 
 test_that("seq tests", {
   expect_equal(gen.vector(x + y, x = seq(10, 30, 10), y = seq(1, 2, 0.5)), c(11.0, 21.0, 31.0, 11.5, 21.5, 31.5, 12.0, 22.0, 32.0))
-  expect_equal(gen.list(c(x,y), x = seq(1,3), y = x:2), list(c(1,1),c(1,2),c(2,2)))
+  expect_equal(gen.list(c(x,y), x = seq(1, 3), y = x:2), list(c(1,1),c(1,2),c(2,2)))
   # do not substitute within seq!
-  expect_error(gen.list(c(x,y), x = seq(1,3), y = seq(x,3)), "could not evaluate variable range of 'y'")
+  expect_error(gen.list(c(x,y), x = seq(1, 3), y = seq(x, 3)), "values must be length 3")
 })
 
 test_that("expression tests", {
@@ -184,4 +184,9 @@ test_that("sorting", {
   expect_equal(gen.data.frame(c(a = a, b = b), b = 1:2, a = 1:2), data.frame(a = c(1L, 1L, 2L, 2L), b = c(1L, 2L, 1L, 2L)))
   expect_equal(gen.data.frame(c(x_1 = x_1, x_2 = x_2, a = a), x_ = 1:2, a = 1:2, x_1 = 1:2), 
                data.frame(x_1 = c(1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L), x_2 = c(1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L), a = c(1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L)))
+})
+
+test_that("substitutions", {
+  expect_equal(gen.data.frame(c(i, j), i = 0:3, j = 2 * i), data.frame(i = c(0, 1, 2, 3), j = c(0, 2, 4, 6)))
+  expect_equal(gen.data.frame(c(i, j), i = 0:3, j = 2 * i, j < 6), data.frame(i = c(0, 1, 2), j = c(0, 2, 4)))
 })
