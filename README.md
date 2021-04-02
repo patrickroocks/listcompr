@@ -4,7 +4,7 @@ The **listcompr** package is a light-weight collection of functions for list com
 
 ## Installation
 
-[listcompr is on CRAN.](https://cran.r-project.org/web/packages/listcompr/index.html) To install the latest version from CRAN, simply use:
+[listcompr is on CRAN.](https://CRAN.R-project.org/package=listcompr) To install the latest version from CRAN, simply use:
 
     install.packages("listcompr")
 
