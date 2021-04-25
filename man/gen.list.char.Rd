@@ -6,6 +6,7 @@
 \alias{gen.named.list}
 \alias{gen.named.vector}
 \alias{gen.named.data.frame}
+\alias{gen.named.matrix}
 \title{Generate Characters and Named Lists, Vectors and Data Frames with List Comprehension}
 \usage{
 gen.list.char(str, ...)
@@ -17,6 +18,8 @@ gen.named.list(str, expr, ...)
 gen.named.vector(str, expr, ...)
 
 gen.named.data.frame(str, expr, ...)
+
+gen.named.matrix(str, expr, ...)
 }
 \arguments{
 \item{str}{A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
@@ -30,7 +33,7 @@ For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} fo
 \value{
 The functions \code{gen.list.char} and \code{gen.vector.char} return lists and vectors of characters.
 
-The functions \code{gen.named.list}, \code{gen.named.vector}, \code{gen.named.data.frame} return lists, vectors, and data frames.
+The functions \code{gen.named.list}, \code{gen.named.vector}, \code{gen.named.data.frame}, \code{gen.named.matrix} return lists, vectors, data frames, and matrices.
 The work very similar to their counterparts without ".named".
 Additionally the vector of characters, induced by \code{str}, serves as a vector of names for the generated structures. 
 In case of lists or vectors, the result is a named list or a named vector. For data frames, the names are taken as row names.
@@ -50,6 +53,9 @@ gen.named.list("sum_to_{x}", sum(1:x), x = 1:5)
 
 # same as above, but return as text
 gen.list.char("sum of 1 to {x} is {sum(1:x)}", x = 1:5)
+
+# matrix with named columns and rows
+gen.named.matrix('row{i}', gen.named.vector('col{j}', i+j, j = 1:3), i = 1:3)
 
 }
 \seealso{

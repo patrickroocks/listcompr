@@ -92,6 +92,9 @@ test_that("Named lists/vectors/dataframes tests", {
   
   expect_equal(gen.named.data.frame("col_{i}", 10 * i + c(a = 1, b = 2), i = 1:2),
                data.frame(a = c(11, 21), b = c(12, 22), row.names = c("col_1",  "col_2")))
+  
+  expect_equal(gen.named.data.frame("col_{a}", c(a, b), a = 1:2, b = 1),
+               data.frame(a = c(1, 2), b = c(1, 1), row.names = c("col_1",  "col_2")))
 })
 
 test_that("three dots tests", {
@@ -189,4 +192,11 @@ test_that("sorting", {
 test_that("substitutions", {
   expect_equal(gen.data.frame(c(i, j), i = 0:3, j = 2 * i), data.frame(i = c(0, 1, 2, 3), j = c(0, 2, 4, 6)))
   expect_equal(gen.data.frame(c(i, j), i = 0:3, j = 2 * i, j < 6), data.frame(i = c(0, 1, 2), j = c(0, 2, 4)))
+})
+
+test_that("matrix tests", {
+  expect_equal(gen.matrix(gen.vector(i+j, i = 1:2), j = 1:3), matrix(c(2, 3, 3, 4, 4, 5), ncol = 2, byrow = TRUE))
+  expect_equal(gen.matrix(c(1, a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE))
+  expect_equal(gen.matrix(c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(NULL, c('', 'a'))))
+  expect_equal(gen.named.matrix('row{a}', c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(c('row1', 'row2'), c('', 'a'))))
 })

@@ -1,3 +1,8 @@
+# listcompr 0.2.1
+
+* fixed missing colnames in `gen.named.data.frame`
+* added `gen.matrix` and `gen.named.matrix` for generating (named) matrices
+
 # listcompr 0.2.0
 
 * variable ranges can also be of character type (fixes https://github.com/patrickroocks/listcompr/issues/1)

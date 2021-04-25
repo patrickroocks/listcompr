@@ -4,6 +4,7 @@
 \alias{gen.list}
 \alias{gen.vector}
 \alias{gen.data.frame}
+\alias{gen.matrix}
 \title{Generate Lists, Vectors and Data Frames with List Comprehension}
 \usage{
 gen.list(expr, ...)
@@ -11,6 +12,8 @@ gen.list(expr, ...)
 gen.vector(expr, ...)
 
 gen.data.frame(expr, ...)
+
+gen.matrix(expr, ...)
 }
 \arguments{
 \item{expr}{A base expression containing free variables which is evaluated for all combinations of variables, 
@@ -20,7 +23,7 @@ Expected structure of \code{expr}:
  \itemize{
    \item For \code{gen.list} it may have arbitrary structure (including a list).
    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
-   \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
+   \item For \code{gen.data.frame} and \code{gen.matrix} a (named) vector or list is expected which describes one row of the data frame.
   }
   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.}
 
@@ -38,6 +41,11 @@ The output of \code{gen.data.frame} is a data frame where each substituted \code
 The base expression \code{expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
 If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
 Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
+
+The result of \code{gen.matrix} is a matrix where each substituted \code{expr} entry is one row.
+It works similar to \code{gen.data.frame}.
+In contrast to that, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
+If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
 
 All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
 For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.

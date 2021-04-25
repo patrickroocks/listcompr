@@ -15,7 +15,7 @@
 #'  \itemize{
 #'    \item For \code{gen.list} it may have arbitrary structure (including a list).
 #'    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
-#'    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
+#'    \item For \code{gen.data.frame} and \code{gen.matrix} a (named) vector or list is expected which describes one row of the data frame.
 #'   }
 #'   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.
 #' @param ... Arbitrary many variable ranges and conditions.
@@ -33,6 +33,11 @@
 #' The base expression \code{expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
 #' If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
 #' Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
+#' 
+#' The result of \code{gen.matrix} is a matrix where each substituted \code{expr} entry is one row.
+#' It works similar to \code{gen.data.frame}.
+#' In contrast to that, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
+#' If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
 #' 
 #' All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
 #' For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.
@@ -100,12 +105,21 @@ gen.vector <- function(expr, ...) {
   l <- substitute(list(...))
   return(gen_list_internal(expr, l, TRUE, OUTPUT_FORMAT$NUM, NULL, parent.frame()))
 }
+
 #' @rdname gen.list
 #' @export
 gen.data.frame <- function(expr, ...) {
   l <- substitute(list(...))
   expr <- substitute(expr)
   return(gen_list_internal(expr, l, FALSE, OUTPUT_FORMAT$DF, NULL, parent.frame()))
+}
+
+#' @rdname gen.list
+#' @export
+gen.matrix <- function(expr, ...) {
+  l <- substitute(list(...))
+  expr <- substitute(expr)
+  return(gen_list_internal(expr, l, FALSE, OUTPUT_FORMAT$MTX, NULL, parent.frame()))
 }
 
 # ----------------------------- Characters / Named Structures ----------------------------------------
@@ -135,7 +149,7 @@ gen.data.frame <- function(expr, ...) {
 #' 
 #' The functions \code{gen.list.char} and \code{gen.vector.char} return lists and vectors of characters.
 #' 
-#' The functions \code{gen.named.list}, \code{gen.named.vector}, \code{gen.named.data.frame} return lists, vectors, and data frames.
+#' The functions \code{gen.named.list}, \code{gen.named.vector}, \code{gen.named.data.frame}, \code{gen.named.matrix} return lists, vectors, data frames, and matrices.
 #' The work very similar to their counterparts without ".named".
 #' Additionally the vector of characters, induced by \code{str}, serves as a vector of names for the generated structures. 
 #' In case of lists or vectors, the result is a named list or a named vector. For data frames, the names are taken as row names.
@@ -149,6 +163,9 @@ gen.data.frame <- function(expr, ...) {
 #' 
 #' # same as above, but return as text
 #' gen.list.char("sum of 1 to {x} is {sum(1:x)}", x = 1:5)
+#' 
+#' # matrix with named columns and rows
+#' gen.named.matrix('row{i}', gen.named.vector('col{j}', i+j, j = 1:3), i = 1:3)
 #' 
 #' @export
 gen.list.char <- function(str, ...) {
@@ -185,6 +202,14 @@ gen.named.data.frame <- function(str, expr, ...) {
   l <- substitute(list(...))
   expr <- substitute(expr)
   return(gen_list_internal(expr, l, FALSE, OUTPUT_FORMAT$DF, str, parent.frame()))
+}
+
+#' @rdname gen.list.char
+#' @export
+gen.named.matrix <- function(str, expr, ...) {
+  l <- substitute(list(...))
+  expr <- substitute(expr)
+  return(gen_list_internal(expr, l, FALSE, OUTPUT_FORMAT$MTX, str, parent.frame()))
 }
 
 # ----------------------------- Expressions ----------------------------------------
@@ -885,7 +910,7 @@ eval_char_pattern <- function(char_pattern, data, parent_frame) {
 
 # ------------- Main functions (called by interface) --------------------
 
-OUTPUT_FORMAT <- list(NUM = 1, EXPR = 2, CHAR = 3, DF = 4)
+OUTPUT_FORMAT <- list(NUM = 1, EXPR = 2, CHAR = 3, DF = 4, MTX = 5)
 
 gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_frame) {
   
@@ -960,11 +985,18 @@ gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_
                     else         function(X, FUN) lapply(X, FUN) }
     return(apply_func(1:nrow(cartesian_df), function(i) eval_char_pattern(char_pattern_expr, cartesian_df[i,,drop=FALSE], parent_frame)))
     
-  } else if (output_format == OUTPUT_FORMAT$DF) {
-    if (is.null(name_str)) expr <- insert_names(expr)
+  } else if (output_format %in% c(OUTPUT_FORMAT$DF, OUTPUT_FORMAT$MTX)) {
+    if (output_format == OUTPUT_FORMAT$DF || !is.null(names(expr))) {
+      expr <- insert_names(expr)
+    }
     rv_list <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
     if (!is.null(name_str)) names(rv_list) <- name_vec
-    return(as.data.frame(do.call("rbind", rv_list)))
+    rv_list <- do.call("rbind", rv_list)
+    if (output_format == OUTPUT_FORMAT$DF) {
+      return(as.data.frame(rv_list))
+    } else { # matrix
+      return(as.matrix(rv_list))
+    }
   }
 }
 
