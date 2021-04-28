@@ -1,10 +1,10 @@
 # ----------------------------- List, Vectors, Data Frames ----------------------------------------
 
-#' Generate Lists, Vectors and Data Frames with List Comprehension
+#' Generate Lists, Vectors, Data Frames and Matrices with List Comprehension
 #' 
 #' @description
 #' 
-#' Functions to transform a base expression containing free variables into a list, a vector, or a data frame
+#' Functions to transform a base expression containing free variables into a list, a vector, a data frame, or a matrix
 #' based on variable ranges and additional conditions.
 #'
 #' @name gen.list
@@ -15,7 +15,9 @@
 #'  \itemize{
 #'    \item For \code{gen.list} it may have arbitrary structure (including a list).
 #'    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
-#'    \item For \code{gen.data.frame} and \code{gen.matrix} a (named) vector or list is expected which describes one row of the data frame.
+#'    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
+#'    \item For \code{gen.matrix} either a (named) vector/list (like \code{gen.data.frame}) or a scalar is expected. 
+#'          In the latter case we expect exactly two variables (inducing columns/rows) within the \code{...} arguments.
 #'   }
 #'   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.
 #' @param ... Arbitrary many variable ranges and conditions.
@@ -34,10 +36,15 @@
 #' If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
 #' Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
 #' 
-#' The result of \code{gen.matrix} is a matrix where each substituted \code{expr} entry is one row.
-#' It works similar to \code{gen.data.frame}.
-#' In contrast to that, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
-#' If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
+#' The result of \code{gen.matrix}:
+#' \itemize{
+#'   \item It's similar to \code{gen.data.frame}, if \code{expr} evaluates to a vector of length > 1, or row/column names are given.
+#'         Each substituted \code{expr} entry is one row of the matrix.
+#'         In contrast to \code{gen.data.frame}, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
+#'         If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
+#'   \item It's a matrix where the columns/rows are induced by the first/second variable, if \code{expr} is a scalar, and no names or conditions are given.
+#'         For instance, \code{gen.matrix(i + j, j = 1:3, i = 1:2)} is a matrix with 3 columns and 2 rows.
+#' }
 #' 
 #' All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
 #' For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.
@@ -90,6 +97,9 @@
 #' # and a flag if they are "perfect" (sum of divisors equals the number)
 #' gen.data.frame(c(n, sumdiv, perfect = (n == sumdiv)), n = 2:20, 
 #'                sumdiv = sum(gen.vector(x, x = 1:(n-1), n %% x == 0)))
+#'                
+#' # A diagonal matrix with (1, ..., 5) on the diagonal
+#' gen.matrix(if (i == j) i else 0, i = 1:5, j = 1:5)
 #' 
 #' @export
 gen.list <- function(expr, ...) {
@@ -124,11 +134,11 @@ gen.matrix <- function(expr, ...) {
 
 # ----------------------------- Characters / Named Structures ----------------------------------------
 
-#' Generate Characters and Named Lists, Vectors and Data Frames with List Comprehension
+#' Generate Characters and Named Lists, Vectors, Data Frames and Matrices with List Comprehension
 #' 
 #' @description
 #' 
-#' Functions to transform patterns with placeholders into characters or into names of lists, vectors, or data frames,
+#' Functions to transform patterns with placeholders into characters or into names of lists, vectors, data frames or matrices,
 #' based on variable ranges and additional conditions.
 #' 
 #' @name gen.list.char
@@ -701,15 +711,16 @@ get_cartesian_df_after_expansion <- function(vars_lst, cond_lst, parent_frame) {
   extra_conditions <- res[[2]]
   sub_vars <- res[[3]]
   
-  vars_lst[["stringsAsFactors"]] <- FALSE # for non-numeric vars
+  expand_grid_args <- vars_lst
+  expand_grid_args[["stringsAsFactors"]] <- FALSE # for non-numeric vars
 
   # Cartesian product of free vars via expand.grid
-  cartesian_df <- do.call(expand.grid, vars_lst, envir = parent_frame)
+  cartesian_df <- do.call(expand.grid, expand_grid_args, envir = parent_frame)
   
   # quick exit?
   if (nrow(cartesian_df) == 0) return(cartesian_df)
   
-  # apply substitutions first
+  # apply substitutions first, add them to the data frame
   if (length(sub_vars) >= 1) {
     for (i in 1:length(sub_vars)) {
       cartesian_df[names(sub_vars)[i]] <- apply_to_cartesian(sub_vars[[i]], cartesian_df, parent_frame)
@@ -717,16 +728,16 @@ get_cartesian_df_after_expansion <- function(vars_lst, cond_lst, parent_frame) {
   }
   
   # Apply all conditions (given conditions + from adjusted limits), and-connect them
-  lst_args <- c(cond_lst, extra_conditions)
-  if (length(lst_args) > 0) {
+  cond_lst <- c(cond_lst, extra_conditions)
+  if (length(cond_lst) > 0) {
     # Non-vector-wise applier of a single condition
     condition_applier <- function(expr) {
       vapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), TRUE)
     }
-    cartesian_df <- cartesian_df[Reduce("&", lapply(lst_args, condition_applier), TRUE),,drop = FALSE]
+    cartesian_df <- cartesian_df[Reduce("&", lapply(cond_lst, condition_applier), TRUE),,drop = FALSE]
   }
   
-  return(cartesian_df) 
+  return(list(cartesian_df = cartesian_df, vars_lst = vars_lst, cond_lst = cond_lst))
 }
 
 # Helper for evaluating expressions partially (in gen_logical_internal and gen_list_internal, if output is expr)
@@ -808,6 +819,19 @@ fold.or <- function(lst) {
   expr[2][[1]] <- lst[[1]]
   expr[3][[1]] <- fold.or(lst[-1])
   return(expr)
+}
+
+check_2d_matrix <- function(first_row, vars_lst, cond_lst, parent_frame) {
+  if (!(is.null(colnames(first_row)) && is.null(rownames(first_row))
+        && length(first_row) == 1
+        && length(vars_lst) == 2 && length(cond_lst) == 0)) return(NULL)
+  
+  ncol <- tryCatch(eval(vars_lst[[1]], parent_frame), error = function(e) NULL)
+  if (is.null(ncol)) return(NULL)
+  nrow <- tryCatch(eval(vars_lst[[2]], parent_frame), error = function(e) NULL)
+  if (is.null(row)) return(NULL)
+  
+  return(list(ncol = length(ncol), nrow = length(nrow)))
 }
 
 # ------------- Char compositions by patterns--------------------
@@ -948,7 +972,11 @@ gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_
   }
   
   # get Cartesian df for those vars/conditions
-  cartesian_df <- get_cartesian_df_after_expansion(vars_lst, cond_lst, parent_frame)
+  res_cart <- get_cartesian_df_after_expansion(vars_lst, cond_lst, parent_frame)
+  cartesian_df <- res_cart$cartesian_df
+  vars_lst     <- res_cart$vars_lst
+  cond_lst     <- res_cart$cond_lst
+  
   if (nrow(cartesian_df) == 0) {
     warning("no variable ranges detected, returning empty result", call. = FALSE)
     if (output_format == OUTPUT_FORMAT$DF) return(data.frame())
@@ -995,7 +1023,12 @@ gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_
     if (output_format == OUTPUT_FORMAT$DF) {
       return(as.data.frame(rv_list))
     } else { # matrix
-      return(as.matrix(rv_list))
+      res_mtx <- check_2d_matrix(rv_list[1,,drop=FALSE], vars_lst, cond_lst, parent_frame)
+      if (is.null(res_mtx)) {
+        return(as.matrix(rv_list))
+      } else {
+        return(matrix(rv_list, nrow = res_mtx$nrow, ncol = res_mtx$ncol, byrow = TRUE))
+      }
     }
   }
 }
@@ -1028,7 +1061,7 @@ gen_logical_internal <- function(expr, l, is_and, parent_frame) {
   res <- expand_expr(expr, vars_lst, ctx)
   expr <- res[[1]]
   vars_lst <- res[[2]]
-  cartesian_df <- get_cartesian_df_after_expansion(vars_lst, cond_lst, parent_frame)
+  cartesian_df <- get_cartesian_df_after_expansion(vars_lst, cond_lst, parent_frame)$cartesian_df
   if (nrow(cartesian_df) == 0) return(expression())
   
   # Apply expression and return, no parent_frame in eval_partial (evaluating "x" in "x_i" would be wrong!)

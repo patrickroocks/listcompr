@@ -5,7 +5,7 @@
 \alias{gen.vector}
 \alias{gen.data.frame}
 \alias{gen.matrix}
-\title{Generate Lists, Vectors and Data Frames with List Comprehension}
+\title{Generate Lists, Vectors, Data Frames and Matrices with List Comprehension}
 \usage{
 gen.list(expr, ...)
 
@@ -23,7 +23,9 @@ Expected structure of \code{expr}:
  \itemize{
    \item For \code{gen.list} it may have arbitrary structure (including a list).
    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
-   \item For \code{gen.data.frame} and \code{gen.matrix} a (named) vector or list is expected which describes one row of the data frame.
+   \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
+   \item For \code{gen.matrix} either a (named) vector/list (like \code{gen.data.frame}) or a scalar is expected. 
+         In the latter case we expect exactly two variables (inducing columns/rows) within the \code{...} arguments.
   }
   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.}
 
@@ -42,16 +44,21 @@ The base expression \code{expr} should contain a (named) vector or list, such th
 If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
 Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
 
-The result of \code{gen.matrix} is a matrix where each substituted \code{expr} entry is one row.
-It works similar to \code{gen.data.frame}.
-In contrast to that, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
-If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
+The result of \code{gen.matrix}:
+\itemize{
+  \item It's similar to \code{gen.data.frame}, if \code{expr} evaluates to a vector of length > 1, or row/column names are given.
+        Each substituted \code{expr} entry is one row of the matrix.
+        In contrast to \code{gen.data.frame}, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
+        If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
+  \item It's a matrix where the columns/rows are induced by the first/second variable, if \code{expr} is a scalar, and no names or conditions are given.
+        For instance, \code{gen.matrix(i + j, j = 1:3, i = 1:2)} is a matrix with 3 columns and 2 rows.
+}
 
 All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
 For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.
 }
 \description{
-Functions to transform a base expression containing free variables into a list, a vector, or a data frame
+Functions to transform a base expression containing free variables into a list, a vector, a data frame, or a matrix
 based on variable ranges and additional conditions.
 }
 \section{Syntactic Features}{
@@ -99,6 +106,9 @@ gen.data.frame(c(x_1, ..., x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
 # and a flag if they are "perfect" (sum of divisors equals the number)
 gen.data.frame(c(n, sumdiv, perfect = (n == sumdiv)), n = 2:20, 
                sumdiv = sum(gen.vector(x, x = 1:(n-1), n \%\% x == 0)))
+               
+# A diagonal matrix with (1, ..., 5) on the diagonal
+gen.matrix(if (i == j) i else 0, i = 1:5, j = 1:5)
 
 }
 \seealso{

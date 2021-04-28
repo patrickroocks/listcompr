@@ -1,3 +1,7 @@
+# listcompr 0.2.2
+
+* `gen.matrix` automatically searches for two dimensions in the ... arguments
+
 # listcompr 0.2.1
 
 * fixed missing colnames in `gen.named.data.frame`

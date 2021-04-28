@@ -7,7 +7,7 @@
 \alias{gen.named.vector}
 \alias{gen.named.data.frame}
 \alias{gen.named.matrix}
-\title{Generate Characters and Named Lists, Vectors and Data Frames with List Comprehension}
+\title{Generate Characters and Named Lists, Vectors, Data Frames and Matrices with List Comprehension}
 \usage{
 gen.list.char(str, ...)
 
@@ -39,7 +39,7 @@ Additionally the vector of characters, induced by \code{str}, serves as a vector
 In case of lists or vectors, the result is a named list or a named vector. For data frames, the names are taken as row names.
 }
 \description{
-Functions to transform patterns with placeholders into characters or into names of lists, vectors, or data frames,
+Functions to transform patterns with placeholders into characters or into names of lists, vectors, data frames or matrices,
 based on variable ranges and additional conditions.
 }
 \details{

@@ -165,7 +165,7 @@ test_that("expression tests", {
 
 
 test_that("character tests", {
-  expect_equal(gen.list.char('a{i}_{2*i}', i = 1:3), list("a1_2", "a2_4", "a3_6"))
+  expect_equal(gen.list.char("a{i}_{2*i}", i = 1:3), list("a1_2", "a2_4", "a3_6"))
   expect_equal(gen.vector.char("{if (i==1) { 'a' } else 'b'}{i}", i = 1:3), c("a1", "b2", "b3"))
   
   x <- 1
@@ -177,8 +177,8 @@ test_that("character tests", {
 })
 
 test_that("non-numeric test", {
-  expect_equal(gen.vector(m, m = month.abb, substr(m, 1, 1) == 'J'), c("Jan", "Jun", "Jul"))
-  expect_equal(gen.list(m, m = month.abb, substr(m, 1, 1) == 'J'), list("Jan", "Jun", "Jul"))
+  expect_equal(gen.vector(m, m = month.abb, substr(m, 1, 1) == "J"), c("Jan", "Jun", "Jul"))
+  expect_equal(gen.list(m, m = month.abb, substr(m, 1, 1) == "J"), list("Jan", "Jun", "Jul"))
 })
 
 test_that("sorting", {
@@ -197,6 +197,15 @@ test_that("substitutions", {
 test_that("matrix tests", {
   expect_equal(gen.matrix(gen.vector(i+j, i = 1:2), j = 1:3), matrix(c(2, 3, 3, 4, 4, 5), ncol = 2, byrow = TRUE))
   expect_equal(gen.matrix(c(1, a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE))
-  expect_equal(gen.matrix(c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(NULL, c('', 'a'))))
-  expect_equal(gen.named.matrix('row{a}', c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(c('row1', 'row2'), c('', 'a'))))
+  expect_equal(gen.matrix(c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(NULL, c("", "a"))))
+  expect_equal(gen.named.matrix("row{a}", c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(c("row1", "row2"), c("", "a"))))
+  
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3), matrix(c(11, 21, 12, 22, 13, 23), ncol = 2, byrow = TRUE))
+  x <- 4
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=seq(1,6,x)), matrix(c(11, 21, 15, 25), ncol = 2, byrow = TRUE))
+  
+  expect_equal(gen.matrix(i+j, i=1:2, j=i:2),  matrix(c(2, 3, 4), ncol = 1))
+  expect_equal(gen.matrix(c(a = 10*i+j), i=1:2, j=1:3), matrix(c(11, 21, 12, 22, 13, 23), ncol = 1, byrow = TRUE, dimnames = list(NULL, "a")))
+  expect_equal(gen.named.matrix("{i}{j}", 10*i+j, i=1:2, j=1:3),
+               matrix(c(11, 21, 12, 22, 13, 23), ncol = 1, byrow = TRUE, dimnames = list(c("11", "21", "12", "22", "13", "23"))))
 })
