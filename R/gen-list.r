@@ -17,7 +17,7 @@
 #'    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
 #'    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
 #'    \item For \code{gen.matrix} either a (named) vector/list (like \code{gen.data.frame}) or a scalar is expected. 
-#'          In the latter case we expect exactly two variables (inducing columns/rows) within the \code{...} arguments.
+#'          In the latter case we expect exactly two variables (inducing rows/columns) within the \code{...} arguments.
 #'   }
 #'   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.
 #' @param ... Arbitrary many variable ranges and conditions.
@@ -42,8 +42,8 @@
 #'         Each substituted \code{expr} entry is one row of the matrix.
 #'         In contrast to \code{gen.data.frame}, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
 #'         If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
-#'   \item It's a matrix where the columns/rows are induced by the first/second variable, if \code{expr} is a scalar, and no names or conditions are given.
-#'         For instance, \code{gen.matrix(i + j, j = 1:3, i = 1:2)} is a matrix with 3 columns and 2 rows.
+#'   \item It's a matrix where the rows/columns are induced by the first/second variable, if \code{expr} is a scalar, and no names or conditions are given.
+#'         For instance, \code{gen.matrix(i + j, i = 1:3, j = 1:2)} is a matrix with 3 rows and 2 columns.
 #' }
 #' 
 #' All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
@@ -134,7 +134,7 @@ gen.matrix <- function(expr, ...) {
 
 # ----------------------------- Characters / Named Structures ----------------------------------------
 
-#' Generate Characters and Named Lists, Vectors, Data Frames and Matrices with List Comprehension
+#' Generate Characters and Named Lists, Vectors, Data Frames, and Matrices with List Comprehension
 #' 
 #' @description
 #' 
@@ -821,17 +821,18 @@ fold.or <- function(lst) {
   return(expr)
 }
 
+# searches for 2-dim matrix without names/conditions, e.g. gen.matrix(i+j, i=1:3, j=1:4)
 check_2d_matrix <- function(first_row, vars_lst, cond_lst, parent_frame) {
   if (!(is.null(colnames(first_row)) && is.null(rownames(first_row))
         && length(first_row) == 1
         && length(vars_lst) == 2 && length(cond_lst) == 0)) return(NULL)
   
-  ncol <- tryCatch(eval(vars_lst[[1]], parent_frame), error = function(e) NULL)
-  if (is.null(ncol)) return(NULL)
-  nrow <- tryCatch(eval(vars_lst[[2]], parent_frame), error = function(e) NULL)
+  nrow <- tryCatch(eval(vars_lst[[1]], parent_frame), error = function(e) NULL)
   if (is.null(row)) return(NULL)
+  ncol <- tryCatch(eval(vars_lst[[2]], parent_frame), error = function(e) NULL)
+  if (is.null(ncol)) return(NULL)
   
-  return(list(ncol = length(ncol), nrow = length(nrow)))
+  return(list(nrow = length(nrow), ncol = length(ncol)))
 }
 
 # ------------- Char compositions by patterns--------------------
@@ -1027,7 +1028,7 @@ gen_list_internal <- function(expr, l, use_vec, output_format, name_str, parent_
       if (is.null(res_mtx)) {
         return(as.matrix(rv_list))
       } else {
-        return(matrix(rv_list, nrow = res_mtx$nrow, ncol = res_mtx$ncol, byrow = TRUE))
+        return(matrix(rv_list, nrow = res_mtx$nrow, ncol = res_mtx$ncol))
       }
     }
   }

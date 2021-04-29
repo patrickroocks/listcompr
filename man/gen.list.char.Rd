@@ -7,7 +7,7 @@
 \alias{gen.named.vector}
 \alias{gen.named.data.frame}
 \alias{gen.named.matrix}
-\title{Generate Characters and Named Lists, Vectors, Data Frames and Matrices with List Comprehension}
+\title{Generate Characters and Named Lists, Vectors, Data Frames, and Matrices with List Comprehension}
 \usage{
 gen.list.char(str, ...)
 

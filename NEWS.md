@@ -1,3 +1,7 @@
+# listcompr 0.2.3
+
+* changed order of dimensions in `gen.matrix` for auto-detected 2-dim matrix
+
 # listcompr 0.2.2
 
 * `gen.matrix` automatically searches for two dimensions in the ... arguments
