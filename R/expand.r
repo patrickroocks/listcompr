@@ -131,7 +131,7 @@ expand_nested_expr <- function(expr, vars, ctx) {
         # re-adjust loop control
         i <- i + length(inner_range) - 1 # skip "..." (thus -1), insert length of inner_range
       }
-    } else if (!is.atomic(expr[i][[1]])) { # go into recursion, merge vars
+    } else { # go into recursion, merge vars
       res <- expand_expr(expr[i][[1]], vars, ctx)
       expr[i][[1]] <- res[["expr"]]
       vars <- res[["vars"]]

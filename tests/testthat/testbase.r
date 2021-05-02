@@ -95,6 +95,9 @@ test_that("Named lists/vectors/dataframes tests", {
   
   expect_equal(gen.named.data.frame("col_{a}", c(a, b), a = 1:2, b = 1),
                data.frame(a = c(1, 2), b = c(1, 1), row.names = c("col_1",  "col_2")))
+  
+  expect_equal(gen.data.frame(list(a = i, b = "x{j}"), j = 0:2, i = 1:2),
+               structure(list(a = list(1L, 1L, 1L, 2L, 2L, 2L), b = list("x0", "x1", "x2", "x0", "x1", "x2")), class = "data.frame", row.names = c(NA,-6L)))
 })
 
 test_that("three dots tests", {
@@ -173,8 +176,6 @@ test_that("character tests", {
   expect_equal(gen.vector("{x+y}", x = 10:11, y = x:11), c("20", "21", "22"))
   
   expect_equal(gen.vector("{i+1}_{i}", i = 1:2), c("2_1", "3_2"))
-  
-  # TODO CRASH !!!
   expect_equal(gen.vector("{{a}}", i = 1:2), c("{{a}}", "{{a}}"))
 })
 

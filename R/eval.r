@@ -363,7 +363,7 @@ gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
     if (!is.null(name_str)) names(rv_list) <- name_vec
     rv_list <- do.call("rbind", rv_list)
     if (output_format == OUTPUT_FORMAT[["DF"]]) {
-      return(as.data.frame(rv_list))
+      return(as.data.frame(rv_list, stringsAsFactors = FALSE))
     } else { # matrix
       res_mtx <- check_2d_matrix(rv_list[1,,drop=FALSE], vars, conds, parent_frame)
       if (is.null(res_mtx)) {
