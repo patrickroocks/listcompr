@@ -61,10 +61,8 @@ For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is eq
 Functions to transform a base expression containing free variables into a list, a vector, a data frame, or a matrix
 based on variable ranges and additional conditions.
 }
-\section{Syntactic Features}{
+\section{Indices for variables}{
  
-
-There are several syntactic features to be used in variable ranges, conditions, and expressions.
 
 A range for a variable ending with an underscore (like \code{x_}) defines a set of ranges affecting all variables named \code{{varname}_{index}}, e.g. \code{x_1}.
 For instance, in \code{gen.vector(x_1 + x_2 + x_3, x_ = 1:5)} the variables \code{x_1, x_2, x_3} are all ranging in \code{1:5}.
@@ -76,6 +74,10 @@ For instance, the two following statements produce the same results:
   \item \code{gen.vector(x_1 + x_2 + a, x_ = 1:5, a = 1:2, x_1 = 1:2)}
   \item \code{gen.vector(x_1 + x_2 + a, x_1 = 1:2, x_2 = 1:5, a = 1:2)}
 }
+}
+
+\section{Folded expressions}{
+
 
 Expressions and conditions support a \code{...}-notation which works as follows:
 
@@ -92,15 +94,32 @@ Expressions and conditions support a \code{...}-notation which works as follows:
 The conditions may contain itself list comprehension expressions, e.g., \code{\link{gen.logical.and}} to compose and-connected logical expressions.
 }
 
+\section{Character patterns}{
+
+
+In expression there may occur characters with \code{\{\}}-placeholders. 
+The content of these placeholders is evaluated like any other part of an expression and converted to a character.
+For example, \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
+Double brackets are transformed into a single bracket without evaluating the inner expression.
+For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} for \code{x = 1}.
+}
+
 \examples{
-# Compose 10, 11, 20, 21, 22, 30, ..., 33, ..., 90, ..., 99 into a vector
-gen.vector(x * 10 + y, x = 1:9, y = 1:x)
+# Sum of 1:x
+gen.vector(sum(1:x), x = 1:10)
+
+# Same as above, but return as text
+gen.list("sum of 1 to {x} is {sum(1:x)}", x = 1:5)
 
 # A list containing vectors [1], [1, 2], [1, 2, 3], ...
 gen.list(gen.vector(i, i = 1:n), n = 1:10)
 
 # A data frame of tuples (x_1, x_2, x_3) summing up to 10
 gen.data.frame(c(x_1, ..., x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
+
+# Same as above, but restrict to ascending tuples with x_i <= x_(i+1)
+gen.data.frame(c(x_1, ..., x_3), x_1 = 1:10, x_2 = x_1:10, x_3 = x_2:10,
+               x_1 + ... + x_3 == 10)
 
 # A data.frame containing the numbers in 2:20, the sum of their divisors
 # and a flag if they are "perfect" (sum of divisors equals the number)
@@ -113,6 +132,7 @@ gen.matrix(if (i == j) i else 0, i = 1:5, j = 1:5)
 }
 \seealso{
 \code{\link{gen.list.expr}} to generate expressions to be evaluated later, 
-  \code{\link{gen.list.char}} to generate lists of characters, 
+  \code{\link{gen.named.list.expr}} to generate named structures, 
+  \code{\link{gen.logical.and}} to generate logical and/or conditions,
   and \link{listcompr} for an overview of all list comprehension functions.
 }

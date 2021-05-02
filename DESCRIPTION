@@ -1,6 +1,6 @@
 Package: listcompr
-Version: 0.2.3
-Date: 2021-04-29
+Version: 0.2.4
+Date: 2021-05-02
 Title: List Comprehension for R
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>
@@ -18,6 +18,8 @@ Suggests:
 Collate: 
     'listcompr.r'
     'gen-list.r'
+    'eval.r'
+    'expand.r'
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
 Encoding: UTF-8

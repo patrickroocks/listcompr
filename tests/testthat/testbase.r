@@ -80,8 +80,8 @@ test_that("Named lists/vectors/dataframes tests", {
 
   expect_equal(gen.named.vector("a{10+a}", 2*a, a=1:2), c(a11 = 2, a12 = 4))
   
-  expect_equal(gen.named.list("sum({c(a_1, ..., a_4)})", sum(a_1, ..., a_4), a_ = 1:2, a_1 + ... + a_4 <= 5),
-               list("sum(c(1, 1, 1, 1))" = 4, "sum(c(2, 1, 1, 1))" = 5, "sum(c(1, 2, 1, 1))" = 5, "sum(c(1, 1, 2, 1))" = 5, "sum(c(1, 1, 1, 2))" = 5))
+  expect_equal(gen.named.list("sum({a_1}, {a_2}, {a_3}, {a_4})", sum(a_1, ..., a_4), a_ = 1:2, a_1 + ... + a_4 <= 5),
+               list("sum(1, 1, 1, 1)" = 4, "sum(2, 1, 1, 1)" = 5, "sum(1, 2, 1, 1)" = 5, "sum(1, 1, 2, 1)" = 5, "sum(1, 1, 1, 2)" = 5))
   
   expect_equal(gen.named.list.expr("a_{i}", a_i, i = 1:5), quote(list(a_1 = a_1, a_2 = a_2, a_3 = a_3, a_4 = a_4, a_5 = a_5)))
   
@@ -165,15 +165,17 @@ test_that("expression tests", {
 
 
 test_that("character tests", {
-  expect_equal(gen.list.char("a{i}_{2*i}", i = 1:3), list("a1_2", "a2_4", "a3_6"))
-  expect_equal(gen.vector.char("{if (i==1) { 'a' } else 'b'}{i}", i = 1:3), c("a1", "b2", "b3"))
+  expect_equal(gen.list("a{i}_{2*i}", i = 1:3), list("a1_2", "a2_4", "a3_6"))
+  expect_equal(gen.vector("{if (i==1) { 'a' } else 'b'}{i}", i = 1:3), c("a1", "b2", "b3"))
   
   x <- 1
-  expect_equal(gen.vector.char("{i}{j}, {x}", i = 1:2, j = i:2), c("11, 1", "12, 1", "22, 1"))
-  expect_equal(gen.vector.char("{x+y}", x = 10:11, y = x:11), c("20", "21", "22"))
+  expect_equal(gen.vector("{i}{j}, {x}", i = 1:2, j = i:2), c("11, 1", "12, 1", "22, 1"))
+  expect_equal(gen.vector("{x+y}", x = 10:11, y = x:11), c("20", "21", "22"))
   
-  expect_equal(gen.vector.char("{i+1}_{i}", i = 1:2), c("2_1", "3_2"))
-  expect_equal(gen.vector.char("{{a}}", i = 1:2), c("{{a}}", "{{a}}"))
+  expect_equal(gen.vector("{i+1}_{i}", i = 1:2), c("2_1", "3_2"))
+  
+  # TODO CRASH !!!
+  expect_equal(gen.vector("{{a}}", i = 1:2), c("{{a}}", "{{a}}"))
 })
 
 test_that("non-numeric test", {

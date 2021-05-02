@@ -32,8 +32,13 @@ For variables with underscores additionally the evaluation of indices in \code{(
 # Returns a_1 == 1 & a_2 == 2 & a_3 == 3
 gen.logical.and(a_i == i, i = 1:3)
 
+# A data frame of tuples (x_1, x_2, x_3, x_4) summing up to 10 with x_i <= x_(i+1)
+gen.data.frame(c(x_1, ..., x_4), x_ = 1:10, x_1 + ... + x_4 == 10, 
+               gen.logical.and(x_i <= x_(i+1), i = 1:3))
+
 # Get all permutations of 1:4
-gen.data.frame(c(a_1, ..., a_4), a_ = 1:4, gen.logical.and(a_i != a_j, i = 1:4, j = (i+1):4))
+gen.data.frame(c(a_1, ..., a_4), a_ = 1:4, 
+               gen.logical.and(a_i != a_j, i = 1:4, j = (i+1):4))
 
 }
 \seealso{

@@ -1,3 +1,7 @@
+# listcompr 0.2.4
+
+* `gen.list` and similar functions accept characters with placeholders, removed `gen.list.char` and `gen.vector.char`
+
 # listcompr 0.2.3
 
 * changed order of dimensions in `gen.matrix` for auto-detected 2-dim matrix
