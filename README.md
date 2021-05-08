@@ -1,6 +1,6 @@
 # listcompr
 
-The **listcompr** package is a light-weight collection of functions for list comprehension. It is intended as “syntactic sugar” for R and it is inspired by the list comprehension capabilities from 'python'. Next to lists, similar structures like vectors (of numeric or character type), data frames, or named lists can be easily composed. The package may be used for the simple generation of small data sets for “textbook examples”, for unit tests of your R code, or for tiny mathematical tasks.
+The **listcompr** package is a light-weight collection of functions for list comprehension. It is intended as “syntactic sugar” for R and it is inspired by the list comprehension capabilities from 'python'. Next to lists, similar structures like vectors (of numeric or character type), data frames, matrices, or named lists can be easily composed. The package may be used for the simple generation of small data sets for “textbook examples”, for unit tests of your R code, or for tiny mathematical tasks.
 
 ## Installation
 
@@ -21,7 +21,7 @@ To install and load the latest development version from this repository, execute
 ### Tiny examples
 
 We show the basic functionality to compose lists, vectors and data frames.
-The first argument for each generator function (`gen.list`, `gen.vector`, and `gen.data.frame`) is a base expression, and the other arguments are variable ranges and conditions.
+The first argument for each generator function (`gen.list`, `gen.vector`, `gen.data.frame`, and `gen.matrix`) is a base expression, and the other arguments are variable ranges and conditions.
 
 First, we want to get a vector of all numbers in `1:10` which can be divided by 3 or 4:
 
@@ -69,4 +69,4 @@ to see a vignette with some more examples.
 
 ## Contact
 
-To submit bugs or suggest improvements, feel free to write a mail to me: Patrick Roocks, mail@p-roocks.de
+To submit bugs or suggest improvements, feel free to [open a github issue](https://github.com/patrickroocks/listcompr/issues) or write a mail to me: Patrick Roocks, mail@p-roocks.de
