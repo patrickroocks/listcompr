@@ -11,9 +11,9 @@ gen.named.list(str, expr, ...)
 
 gen.named.vector(str, expr, ...)
 
-gen.named.data.frame(str, expr, ...)
+gen.named.data.frame(str, expr, ..., bycol = FALSE)
 
-gen.named.matrix(str, expr, ...)
+gen.named.matrix(str, expr, ..., bycol = FALSE)
 }
 \arguments{
 \item{str}{A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 

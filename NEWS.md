@@ -1,3 +1,7 @@
+# listcompr 0.2.5
+
+* added `bycol` parameter to `gen.(named).(data.frame|matrix)` which applies the Cartesian product by column to the expression (WIP: documentation)
+
 # listcompr 0.2.4
 
 * `gen.list` and similar functions accept characters with placeholders, removed `gen.list.char` and `gen.vector.char`

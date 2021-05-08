@@ -98,6 +98,9 @@ test_that("Named lists/vectors/dataframes tests", {
   
   expect_equal(gen.data.frame(list(a = i, b = "x{j}"), j = 0:2, i = 1:2),
                structure(list(a = list(1L, 1L, 1L, 2L, 2L, 2L), b = list("x0", "x1", "x2", "x0", "x1", "x2")), class = "data.frame", row.names = c(NA,-6L)))
+  
+  expect_equal(gen.named.data.frame("{i}", list(i, n = "x{j}"), j = 0:2, i = 1:2, bycol = TRUE),
+               structure(list(1L, "x0", 1L, "x1", 1L, "x2", 2L, "x0", 2L, "x1",      2L, "x2"), .Dim = c(2L, 6L), .Dimnames = list(c("i", "n"), c("1", "1", "1", "2", "2", "2"))))
 })
 
 test_that("three dots tests", {
@@ -197,18 +200,21 @@ test_that("substitutions", {
   expect_equal(gen.data.frame(c(i, j), i = 0:3, j = 2 * i, j < 6), data.frame(i = c(0, 1, 2), j = c(0, 2, 4)))
 })
 
-test_that("matrix tests", {
+test_that("matrix standard tests", {
   expect_equal(gen.matrix(gen.vector(i+j, i = 1:2), j = 1:3), matrix(c(2, 3, 3, 4, 4, 5), ncol = 2, byrow = TRUE))
   expect_equal(gen.matrix(c(1, a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE))
   expect_equal(gen.matrix(c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(NULL, c("", "a"))))
   expect_equal(gen.named.matrix("row{a}", c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(c("row1", "row2"), c("", "a"))))
   
-  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3), matrix(c(11, 12, 13, 21, 22, 23), ncol = 3, byrow = TRUE))
-  x <- 4
-  expect_equal(gen.matrix(10*i+j, i=1:2, j=seq(1,6,x)), matrix(c(11, 15, 21, 25), ncol = 2, byrow = TRUE))
-  
   expect_equal(gen.matrix(i+j, i=1:2, j=i:2),  matrix(c(2, 3, 4), ncol = 1))
   expect_equal(gen.matrix(c(a = 10*i+j), i=1:2, j=1:3), matrix(c(11, 21, 12, 22, 13, 23), ncol = 1, byrow = TRUE, dimnames = list(NULL, "a")))
   expect_equal(gen.named.matrix("{i}{j}", 10*i+j, i=1:2, j=1:3),
                matrix(c(11, 21, 12, 22, 13, 23), ncol = 1, byrow = TRUE, dimnames = list(c("11", "21", "12", "22", "13", "23"))))
+})
+
+test_that("matrix 2dim tests", {
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3), matrix(c(11, 12, 13, 21, 22, 23), ncol = 3, byrow = TRUE))
+  x <- 4
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=seq(1,6,x)), matrix(c(11, 15, 21, 25), ncol = 2, byrow = TRUE))
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3, bycol = TRUE), matrix(c(11, 12, 13, 21, 22, 23), ncol = 2, byrow = FALSE))
 })

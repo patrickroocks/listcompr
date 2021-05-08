@@ -135,18 +135,18 @@ gen.vector <- function(expr, ...) {
 
 #' @rdname gen.list
 #' @export
-gen.data.frame <- function(expr, ...) {
+gen.data.frame <- function(expr, ..., bycol = FALSE) {
   l <- substitute(list(...))
   expr <- substitute(expr)
-  return(gen_list_internal(expr, l, OUTPUT_FORMAT[["DF"]], NULL, parent.frame()))
+  return(gen_list_internal(expr, l, if (bycol) OUTPUT_FORMAT[["DF_COL"]] else OUTPUT_FORMAT[["DF"]], NULL, parent.frame()))
 }
 
 #' @rdname gen.list
 #' @export
-gen.matrix <- function(expr, ...) {
+gen.matrix <- function(expr, ..., bycol = FALSE) {
   l <- substitute(list(...))
   expr <- substitute(expr)
-  return(gen_list_internal(expr, l, OUTPUT_FORMAT[["MTX"]], NULL, parent.frame()))
+  return(gen_list_internal(expr, l, if (bycol) OUTPUT_FORMAT[["MTX_COL"]] else OUTPUT_FORMAT[["MTX"]], NULL, parent.frame()))
 }
 
 # ----- Named Structures -----
@@ -206,18 +206,18 @@ gen.named.vector <- function(str, expr, ...) {
 
 #' @rdname gen.named.list
 #' @export
-gen.named.data.frame <- function(str, expr, ...) {
+gen.named.data.frame <- function(str, expr, ..., bycol = FALSE) {
   l <- substitute(list(...))
   expr <- substitute(expr)
-  return(gen_list_internal(expr, l, OUTPUT_FORMAT[["DF"]], str, parent.frame()))
+  return(gen_list_internal(expr, l, if (bycol) OUTPUT_FORMAT[["DF_COL"]] else OUTPUT_FORMAT[["DF"]], str, parent.frame()))
 }
 
 #' @rdname gen.named.list
 #' @export
-gen.named.matrix <- function(str, expr, ...) {
+gen.named.matrix <- function(str, expr, ..., bycol = FALSE) {
   l <- substitute(list(...))
   expr <- substitute(expr)
-  return(gen_list_internal(expr, l, OUTPUT_FORMAT[["MTX"]], str, parent.frame()))
+  return(gen_list_internal(expr, l, if (bycol) OUTPUT_FORMAT[["MTX_COL"]] else OUTPUT_FORMAT[["MTX"]], str, parent.frame()))
 }
 
 # ----- Expressions -----

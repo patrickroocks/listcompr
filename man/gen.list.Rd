@@ -11,9 +11,9 @@ gen.list(expr, ...)
 
 gen.vector(expr, ...)
 
-gen.data.frame(expr, ...)
+gen.data.frame(expr, ..., bycol = FALSE)
 
-gen.matrix(expr, ...)
+gen.matrix(expr, ..., bycol = FALSE)
 }
 \arguments{
 \item{expr}{A base expression containing free variables which is evaluated for all combinations of variables, 
