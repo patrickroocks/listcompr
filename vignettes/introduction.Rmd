@@ -167,9 +167,29 @@ gen.vector("size: {x}x{y} tiles, where {x*y/2} tiles are at the border/inner",
 ```
 ### A named list
 
-Let's revisit the [example with the divisors](#ex2). Now we don't want the sum of the divisors, but all divisors of a number as a vector. Each vector should be stored in a list entry named `divisors_of_{a}`. With the following we get the divisors for all numbers in `5:10`:
+Let's revisit the [example with the divisors](#ex2). Instead of the sum of the divisors, we want to get all divisors of a number as a vector. Each vector should be stored in a list entry named `divisors_of_{a}`. With the following we get the divisors for all numbers in `5:10`:
 
 ```{r}
 gen.named.list("divisors_of_{a}", gen.vector(x, x = 1:(a-1), a %% x == 0), a = 5:10)
 ```
+
+### Named matrices
+
+We continue with calculating divisors. Assume, the numbers `a = 90:95` are given and we want to show a table indicating which numbers within `2:10` are integer divisors of `a`. The following logical matrix shows this result. We use `byrow = TRUE` to specify that the elements of the inner vector refers to the columns and not to the rows.
+
+```{r, results="asis"}
+m <- gen.named.matrix("divisors_{a}", gen.named.vector("{x}", a %% x == 0, x = 2:10), 
+                      a = 90:95, byrow = TRUE)
+knitr::kable(m)
+```
+
+Analogously to the example above we can create a matrix with characters as content, denoting either the integer result `x/a` or simply `"no"` if `x` is not an integer divisor of `a`.
+
+```{r, results="asis"}
+m <- gen.named.matrix("divisors_{a}",
+        gen.named.vector("{x}", if (a %% x == 0) "factor = {a/x}" else "no", x = 2:10), 
+        a = 90:95, byrow = TRUE)
+knitr::kable(m)
+```
+
 

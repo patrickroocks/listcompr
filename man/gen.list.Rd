@@ -11,9 +11,9 @@ gen.list(expr, ...)
 
 gen.vector(expr, ...)
 
-gen.data.frame(expr, ..., bycol = FALSE)
+gen.data.frame(expr, ..., byrow = FALSE)
 
-gen.matrix(expr, ..., bycol = FALSE)
+gen.matrix(expr, ..., byrow = FALSE)
 }
 \arguments{
 \item{expr}{A base expression containing free variables which is evaluated for all combinations of variables, 
@@ -25,7 +25,7 @@ Expected structure of \code{expr}:
    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
    \item For \code{gen.matrix} either a (named) vector/list (like \code{gen.data.frame}) or a scalar is expected. 
-         In the latter case we expect exactly two variables (inducing rows/columns) within the \code{...} arguments.
+         In the latter case we expect exactly two variables (inducing rows and columns where the order depends on \code{byrow}) within the \code{...} arguments.
   }
   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.}
 
@@ -33,10 +33,14 @@ Expected structure of \code{expr}:
 For all free variables occurring in \code{expr} a range must be assigned, e.g., \code{x = 1:3, y = 1:5} for an expression \code{x + y}. 
 At least one variable range is required.
 The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} or a substitution like \code{x = 1:3, y = 2 * x} is allowed.
-The generated values can be further restricted by conditions (like \code{x <= y}).}
+The generated values can be further restricted by conditions like \code{x <= y}.}
+
+\item{byrow}{Logical. If \code{FALSE} (the default), the elements of a vector within \code{expr} are taken as columns. 
+Otherwise, they are taken as rows.}
 }
 \value{
-The result of \code{gen.list} is a list (a vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), where all the free variables in \code{expr} are substituted.
+The result of \code{gen.list} is a list (a vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), 
+where all the free variables in \code{expr} are substituted.
 The function \code{gen.vector} returns a vector while \code{gen.list} may contain also more complex substructures (like vectors or lists).
 
 The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
@@ -50,8 +54,10 @@ The result of \code{gen.matrix}:
         Each substituted \code{expr} entry is one row of the matrix.
         In contrast to \code{gen.data.frame}, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
         If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
-  \item It's a matrix where the rows/columns are induced by the first/second variable, if \code{expr} is a scalar, and no names or conditions are given.
+  \item It's a matrix where the rows and columns are induced by the two variables within \code{...}, if \code{expr} is a scalar, and no names or conditions are given.
+        If \code{byrow} is \code{FALSE}, the second variable (i.e., the inner loop) refers to the columns, otherwise it refers to the rows.
         For instance, \code{gen.matrix(i + j, i = 1:3, j = 1:2)} is a matrix with 3 rows and 2 columns.
+        For \code{gen.matrix(i + j, i = 1:3, j = 1:2, byrow = TRUE)} we get 2 rows and 3 columns.
 }
 
 All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
@@ -131,8 +137,8 @@ gen.matrix(if (i == j) i else 0, i = 1:5, j = 1:5)
 
 }
 \seealso{
-\code{\link{gen.list.expr}} to generate expressions to be evaluated later, 
-  \code{\link{gen.named.list.expr}} to generate named structures, 
+\code{\link{gen.named.list}} to generate named structures, 
+  \code{\link{gen.list.expr}} to generate expressions to be evaluated later, 
   \code{\link{gen.logical.and}} to generate logical and/or conditions,
   and \link{listcompr} for an overview of all list comprehension functions.
 }

@@ -1,6 +1,7 @@
 # listcompr 0.2.5
 
-* added `bycol` parameter to `gen.(named).(data.frame|matrix)` which applies the Cartesian product by column to the expression (WIP: documentation)
+* added `byrow` parameter to `gen.(named).(data.frame|matrix)` which applies the Cartesian product by column to the expression
+* fixed that `gen.named.(vector|list)` can be used as a inner expression of other `gen.`-functions
 
 # listcompr 0.2.4
 

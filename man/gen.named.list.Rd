@@ -11,9 +11,9 @@ gen.named.list(str, expr, ...)
 
 gen.named.vector(str, expr, ...)
 
-gen.named.data.frame(str, expr, ..., bycol = FALSE)
+gen.named.data.frame(str, expr, ..., byrow = FALSE)
 
-gen.named.matrix(str, expr, ..., bycol = FALSE)
+gen.named.matrix(str, expr, ..., byrow = FALSE)
 }
 \arguments{
 \item{str}{A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
@@ -23,6 +23,9 @@ For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} fo
 \item{expr}{A base expression containing free variables which is evaluated for all combinations of variables.}
 
 \item{...}{Arbitrary many variable ranges and conditions.}
+
+\item{byrow}{Logical. If \code{FALSE} (the default), the elements of an \code{expr} vector are taken as columns. 
+Otherwise, they are taken as rows.}
 }
 \value{
 These functions return lists, vectors, data frames, and matrices.
@@ -45,6 +48,10 @@ gen.named.list("sum_to_{x}", sum(1:x), x = 1:5)
 
 # matrix with named columns and rows
 gen.named.matrix("row{i}", gen.named.vector("col{j}", i+j, j = 1:3), i = 1:3)
+
+# a matrix where the expression refers to the rows and not the columns
+gen.named.matrix("col{i}", c(row1 = i, row2 = 10 * i, row3 = 100 * i), i = 1:10,
+                 byrow = TRUE)
 
 }
 \seealso{

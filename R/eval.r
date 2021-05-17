@@ -246,16 +246,16 @@ get_vars_and_conditions <- function(l, is_var, is_cond, ctx) {
 }
 
 # searches for 2-dim matrix without names/conditions, e.g. gen.matrix(i+j, i=1:3, j=1:4)
-check_2d_matrix <- function(first_row, is_by_col, vars, conds, parent_frame) {
+check_2d_matrix <- function(first_row, is_by_row, vars, conds, parent_frame) {
   if (!(    is.null(names(first_row))
          && length(first_row) == 1
          && length(vars) == 2 && length(conds) == 0)) return(NULL)
   
-  rowindex <- if (is_by_col) 2 else 1
+  rowindex <- if (is_by_row) 2 else 1
   nrow <- tryCatch(eval(vars[[rowindex]], parent_frame), error = function(e) NULL)
   if (is.null(row)) return(NULL)
   
-  colindex <- if (is_by_col) 1 else 2
+  colindex <- if (is_by_row) 1 else 2
   ncol <- tryCatch(eval(vars[[colindex]], parent_frame), error = function(e) NULL)
   if (is.null(ncol)) return(NULL)
   
@@ -285,9 +285,9 @@ fold.or <- function(lst) {
 
 # ----- Main functions (called by interface) -----
 
-OUTPUT_FORMAT <- list(LST = 1, VEC = 2, LST_EXPR = 3, VEC_EXPR = 4, DF = 5, DF_COL = 6, MTX = 7, MTX_COL = 8)
+OUTPUT_FORMAT <- list(LST = 1, VEC = 2, LST_EXPR = 3, VEC_EXPR = 4, DF = 5, DF_ROW = 6, MTX = 7, MTX_ROW = 8)
 
-gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
+gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_frame) {
   
   # * preliminary checks, find vars/conditions
   
@@ -307,9 +307,9 @@ gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
   is_format_expr <- output_format %in% c(OUTPUT_FORMAT[["LST_EXPR"]], OUTPUT_FORMAT[["VEC_EXPR"]])
   is_format_vec  <- output_format %in% c(OUTPUT_FORMAT[["VEC"]],      OUTPUT_FORMAT[["VEC_EXPR"]])
   is_format_lst  <- output_format %in% c(OUTPUT_FORMAT[["LST"]],      OUTPUT_FORMAT[["LST_EXPR"]])
-  is_format_mtx  <- output_format %in% c(OUTPUT_FORMAT[["MTX"]],      OUTPUT_FORMAT[["MTX_COL"]])
-  is_format_df   <- output_format %in% c(OUTPUT_FORMAT[["DF"]],       OUTPUT_FORMAT[["DF_COL"]])
-  is_by_col      <- output_format %in% c(OUTPUT_FORMAT[["MTX_COL"]],  OUTPUT_FORMAT[["DF_COL"]])
+  is_format_mtx  <- output_format %in% c(OUTPUT_FORMAT[["MTX"]],      OUTPUT_FORMAT[["MTX_ROW"]])
+  is_format_df   <- output_format %in% c(OUTPUT_FORMAT[["DF"]],       OUTPUT_FORMAT[["DF_ROW"]])
+  is_by_row      <- output_format %in% c(OUTPUT_FORMAT[["MTX_ROW"]],  OUTPUT_FORMAT[["DF_ROW"]])
   
   # * Expansions
   
@@ -318,9 +318,10 @@ gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
   expr <- res[["expr"]]
   vars <- res[["vars"]]
   
-  has_row_names <- !is.null(name_str)
+  has_row_names <- !is.null(name_str_expr)
   if (has_row_names) { # for named list/vectors/...
-    res <- expand_expr(name_str, vars, ctx)
+    if (is.symbol(name_str_expr)) name_str_expr <- eval(name_str_expr, parent_frame)
+    res <- expand_expr(name_str_expr, vars, ctx)
     name_str_expr <- res[["expr"]]
     vars          <- res[["vars"]]
   }
@@ -342,7 +343,7 @@ gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
   }
   
   if (has_row_names) {
-    name_vec <- vapply(1:nrow(cartesian_df), function(i) eval(name_str_expr, cartesian_df[i,,drop=FALSE], parent_frame), '')
+    name_vec <- vapply(1:nrow(cartesian_df), function(i) eval(name_str_expr, cartesian_df[i,,drop=FALSE], parent_frame), "")
   }
   
   # * Apply expression and return
@@ -352,7 +353,7 @@ gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
     } else {
       rv <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
     }
-    if (!is.null(name_str)) names(rv) <- name_vec
+    if (has_row_names) names(rv) <- name_vec
     return(rv)
     
   } else if (is_format_expr) {
@@ -360,7 +361,7 @@ gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
     for (i in 1:nrow(cartesian_df)) {
       rv[[i+1]] <- eval_partial(expr, cartesian_df[i,,drop=FALSE])
     }
-    if (!is.null(name_str)) names(rv) <- c("", name_vec)
+    if (has_row_names) names(rv) <- c("", name_vec)
     return(rv)
     
   } else if (is_format_df || is_format_mtx) {
@@ -370,15 +371,15 @@ gen_list_internal <- function(expr, l, output_format, name_str, parent_frame) {
     rv_list <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
     if (has_row_names) names(rv_list) <- name_vec
     rv_list_begin <- rv_list[[1]]
-    rv_list <- do.call((if (is_by_col) "cbind" else "rbind"), rv_list)
+    rv_list <- do.call((if (is_by_row) "cbind" else "rbind"), rv_list)
     if (output_format == OUTPUT_FORMAT[["DF"]]) {
       return(as.data.frame(rv_list, stringsAsFactors = FALSE))
     } else { # matrix
-      res_mtx <- if (!has_row_names) check_2d_matrix(rv_list_begin, is_by_col, vars, conds, parent_frame) else NULL
+      res_mtx <- if (!has_row_names) check_2d_matrix(rv_list_begin, is_by_row, vars, conds, parent_frame) else NULL
       if (is.null(res_mtx)) {
         return(as.matrix(rv_list))
       } else {
-        return(matrix(rv_list, nrow = res_mtx[["nrow"]], ncol = res_mtx[["ncol"]], byrow = is_by_col))
+        return(matrix(rv_list, nrow = res_mtx[["nrow"]], ncol = res_mtx[["ncol"]], byrow = is_by_row))
       }
     }
   }

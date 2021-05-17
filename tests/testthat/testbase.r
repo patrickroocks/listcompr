@@ -99,8 +99,18 @@ test_that("Named lists/vectors/dataframes tests", {
   expect_equal(gen.data.frame(list(a = i, b = "x{j}"), j = 0:2, i = 1:2),
                structure(list(a = list(1L, 1L, 1L, 2L, 2L, 2L), b = list("x0", "x1", "x2", "x0", "x1", "x2")), class = "data.frame", row.names = c(NA,-6L)))
   
-  expect_equal(gen.named.data.frame("{i}", list(i, n = "x{j}"), j = 0:2, i = 1:2, bycol = TRUE),
+  expect_equal(gen.named.data.frame("{i}", list(i, n = "x{j}"), j = 0:2, i = 1:2, byrow = TRUE),
                structure(list(1L, "x0", 1L, "x1", 1L, "x2", 2L, "x0", 2L, "x1",      2L, "x2"), .Dim = c(2L, 6L), .Dimnames = list(c("i", "n"), c("1", "1", "1", "2", "2", "2"))))
+  
+  expect_equal(gen.list(gen.named.list("res_{i}x{j}", i * j, j = i:2), i = 1:2), list(list(res_1x1 = 1, res_1x2 = 2), list(res_2x2 = 4)))
+
+  expect_equal(gen.list(gen.named.vector("res_{i}x{j}", i * j, j = i:2), i = 1:2), list(c(res_1x1 = 1, res_1x2 = 2), c(res_2x2 = 4)))
+  
+  expect_equal(gen.data.frame(gen.named.vector(str, i+j, i = 1:2), j = 1:2),
+               structure(list(x1 = 2:3, x2 = 3:4), class = "data.frame", row.names = c(NA,  -2L)))
+  
+  str <- "x{i}"
+  expect_equal(gen.named.vector(str, i, i = 1:2), c(x1 = 1, x2 = 2))
 })
 
 test_that("three dots tests", {
@@ -213,8 +223,9 @@ test_that("matrix standard tests", {
 })
 
 test_that("matrix 2dim tests", {
-  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3), matrix(c(11, 12, 13, 21, 22, 23), ncol = 3, byrow = TRUE))
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3), matrix(gen.vector(10*i+j, i=1:2, j=1:3), ncol = 3))
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3, byrow = TRUE), matrix(gen.vector(10*i+j, i=1:2, j=1:3), ncol = 2, byrow = TRUE))
   x <- 4
   expect_equal(gen.matrix(10*i+j, i=1:2, j=seq(1,6,x)), matrix(c(11, 15, 21, 25), ncol = 2, byrow = TRUE))
-  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3, bycol = TRUE), matrix(c(11, 12, 13, 21, 22, 23), ncol = 2, byrow = FALSE))
+  expect_equal(gen.matrix(10*i+j, i=1:2, j=1:3, byrow = TRUE), matrix(c(11, 12, 13, 21, 22, 23), ncol = 2, byrow = FALSE))
 })
