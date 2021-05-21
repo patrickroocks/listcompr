@@ -304,10 +304,12 @@ insert_names <- function(expr) {
     new_expr[2][[1]] <- expr
     return(new_expr)
   }
-  if (length(expr) <= 1 || (expr[[1]] != quote(c) && expr[[1]] != quote(list))) return(expr) # nothing to detect
+  if (length(expr) <= 1) return(expr) # nothing to detect
+  if (!(as.character(expr[[1]]) %in% c("c", "list", "data.frame"))) return(expr)
+  
   if (length(names(expr)) == length(expr) && sum(names(expr) == "") == 1) return(expr) # all names set
   
-  # already set names
+  # already set names (fill with empty strings if null)
   res_names <- names(expr)
   if (is.null(res_names)) res_names <- rep("", length(expr))
   
@@ -317,9 +319,13 @@ insert_names <- function(expr) {
   tmp_names[res_names != ""] <- res_names[res_names != ""]
   tmp_names[tmp_names != make.names(tmp_names, TRUE)] <- ""
   tmp_names[1] <- ""
-  
-  # fill unset names
   res_names[res_names == ""] <- tmp_names[res_names == ""]
+  
+  # remaining names are V1, V2, ...
+  mask_unset_relevant <- (res_names == "")[2:length(res_names)]
+  res_names[c(FALSE, mask_unset_relevant)] <- paste0("V", which(mask_unset_relevant))
+  
+  # final result
   names(expr) <- res_names
   return(expr)
 }

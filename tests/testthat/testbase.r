@@ -69,6 +69,9 @@ test_that("Basic data frame tests", {
   expect_equal(gen.data.frame(c(x = a, b), a = 1:2, b = 1), data.frame(x = c(1, 2), b = 1))
   expect_equal(gen.data.frame(c(b = a, b), a = 1:2, b = 1), data.frame(b = c(1, 2), V2 = 1))
   expect_equal(gen.data.frame(a, a = 1:5),  data.frame(a = 1:5))
+  
+  expect_equal(gen.data.frame(list(a = i, b = "x_{i}"), i = 1:2, byrow = TRUE),
+               structure(list(V1 = c("1", "x_1"), V1 = c("2", "x_2")), class = "data.frame", row.names = c("a",  "b")))
 })
 
 test_that("Named lists/vectors/dataframes tests", {
@@ -97,19 +100,19 @@ test_that("Named lists/vectors/dataframes tests", {
                data.frame(a = c(1, 2), b = c(1, 1), row.names = c("col_1",  "col_2")))
   
   expect_equal(gen.data.frame(list(a = i, b = "x{j}"), j = 0:2, i = 1:2),
-               structure(list(a = list(1L, 1L, 1L, 2L, 2L, 2L), b = list("x0", "x1", "x2", "x0", "x1", "x2")), class = "data.frame", row.names = c(NA,-6L)))
+               structure(list(a = c(1L, 1L, 1L, 2L, 2L, 2L), b = c("x0", "x1", "x2", "x0", "x1", "x2")), class = "data.frame", row.names = c(NA,-6L)))
   
   expect_equal(gen.named.data.frame("{i}", list(i, n = "x{j}"), j = 0:2, i = 1:2, byrow = TRUE),
-               structure(list(1L, "x0", 1L, "x1", 1L, "x2", 2L, "x0", 2L, "x1",      2L, "x2"), .Dim = c(2L, 6L), .Dimnames = list(c("i", "n"), c("1", "1", "1", "2", "2", "2"))))
+               structure(list("1" = c("1", "x0"), "1" = c("1", "x1"), "1" = c("1",  "x2"), "2" = c("2", "x0"), "2" = c("2", "x1"), "2" = c("2", "x2" )), class = "data.frame", row.names = c("i", "n")))
   
   expect_equal(gen.list(gen.named.list("res_{i}x{j}", i * j, j = i:2), i = 1:2), list(list(res_1x1 = 1, res_1x2 = 2), list(res_2x2 = 4)))
 
   expect_equal(gen.list(gen.named.vector("res_{i}x{j}", i * j, j = i:2), i = 1:2), list(c(res_1x1 = 1, res_1x2 = 2), c(res_2x2 = 4)))
   
+  str <- "x{i}"
   expect_equal(gen.data.frame(gen.named.vector(str, i+j, i = 1:2), j = 1:2),
                structure(list(x1 = 2:3, x2 = 3:4), class = "data.frame", row.names = c(NA,  -2L)))
   
-  str <- "x{i}"
   expect_equal(gen.named.vector(str, i, i = 1:2), c(x1 = 1, x2 = 2))
 })
 
@@ -192,6 +195,14 @@ test_that("character tests", {
   expect_equal(gen.vector("{{a}}", i = 1:2), c("{{a}}", "{{a}}"))
 })
 
+test_that("special type tests", {
+  expect_equal(gen.data.frame(list(x = as.difftime("0:{i}:30")), i = 1:5), 
+               structure(list(x = structure(c(1.5, 2.5, 3.5, 4.5, 5.5), class = "difftime", units = "mins")), row.names = c(NA,  -5L), class = "data.frame"))
+  expect_equal(gen.data.frame(as.difftime("0:{i}:30"), i = 1:5),
+               structure(list(V1 = c(1.5, 2.5, 3.5, 4.5, 5.5)), row.names = c(NA,  -5L), class = "data.frame"))
+  
+})
+
 test_that("non-numeric test", {
   expect_equal(gen.vector(m, m = month.abb, substr(m, 1, 1) == "J"), c("Jan", "Jun", "Jul"))
   expect_equal(gen.list(m, m = month.abb, substr(m, 1, 1) == "J"), list("Jan", "Jun", "Jul"))
@@ -213,8 +224,8 @@ test_that("substitutions", {
 test_that("matrix standard tests", {
   expect_equal(gen.matrix(gen.vector(i+j, i = 1:2), j = 1:3), matrix(c(2, 3, 3, 4, 4, 5), ncol = 2, byrow = TRUE))
   expect_equal(gen.matrix(c(1, a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE))
-  expect_equal(gen.matrix(c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(NULL, c("", "a"))))
-  expect_equal(gen.named.matrix("row{a}", c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(c("row1", "row2"), c("", "a"))))
+  expect_equal(gen.matrix(c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(NULL, c("V1", "a"))))
+  expect_equal(gen.named.matrix("row{a}", c(1, a = a), a = 1:2), matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE, dimnames = list(c("row1", "row2"), c("V1", "a"))))
   
   expect_equal(gen.matrix(i+j, i=1:2, j=i:2),  matrix(c(2, 3, 4), ncol = 1))
   expect_equal(gen.matrix(c(a = 10*i+j), i=1:2, j=1:3), matrix(c(11, 21, 12, 22, 13, 23), ncol = 1, byrow = TRUE, dimnames = list(NULL, "a")))

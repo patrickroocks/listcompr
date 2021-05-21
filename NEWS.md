@@ -1,3 +1,10 @@
+# listcompr 0.2.6
+
+* modified internal conversion from lists to data frames in `gen.data.frame` such that non-fundamental types are accepted
+  (fixes https://github.com/patrickroocks/listcompr/issues/5)
+* fixed result type of gen.data.frame in conjunction with `byrow = TRUE`
+  (fixes https://github.com/patrickroocks/listcompr/issues/6)
+
 # listcompr 0.2.5
 
 * added `byrow` parameter to `gen.(named).(data.frame|matrix)` which applies the Cartesian product by column to the expression

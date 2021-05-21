@@ -262,6 +262,19 @@ check_2d_matrix <- function(first_row, is_by_row, vars, conds, parent_frame) {
   return(list(nrow = length(nrow), ncol = length(ncol)))
 }
 
+# convert vector/list to data.frame
+make_df <- function(val, byrow) {
+  do_t <- if (byrow) function(x) as.data.frame(t(x), stringsAsFactors = FALSE) else identity
+  if (is.data.frame(val)) return(do_t(val))
+  # assume vector or list
+  res_names <- names(val)
+  if (is.null(res_names)) res_names <- rep("", length(val))
+  else if (!any(res_names == "")) return(do_t(as.data.frame(as.list(val), stringsAsFactors = FALSE)))
+  mask_unset <- (res_names == "")
+  res_names[mask_unset] <- paste0("V", which(mask_unset))
+  names(val) <- res_names
+  return(do_t(as.data.frame(as.list(val), stringsAsFactors = FALSE)))
+}
 
 # ---- Fold executors -----
 
@@ -365,16 +378,23 @@ gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_fram
     return(rv)
     
   } else if (is_format_df || is_format_mtx) {
-    if (is_format_df || !is.null(names(expr))) { # no "auto names" for matrices
+    if (is_format_df || !is.null(names(expr))) { # no "auto names" for unnamed matrices
       expr <- insert_names(expr)
     }
-    rv_list <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
-    if (has_row_names) names(rv_list) <- name_vec
-    rv_list_begin <- rv_list[[1]]
-    rv_list <- do.call((if (is_by_row) "cbind" else "rbind"), rv_list)
-    if (output_format == OUTPUT_FORMAT[["DF"]]) {
-      return(as.data.frame(rv_list, stringsAsFactors = FALSE))
+    
+    if (is_format_df) {
+      rv_df <- lapply(1:nrow(cartesian_df), function(i) make_df(eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), is_by_row))
+      rv_df <- do.call((if (is_by_row) "cbind" else "rbind"), rv_df)
+      if (has_row_names) {
+        if (is_by_row) colnames(rv_df) <- name_vec
+        else rownames(rv_df) <- name_vec
+      }
+      return(rv_df)
     } else { # matrix
+      rv_list <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
+      if (has_row_names) names(rv_list) <- name_vec
+      rv_list_begin <- rv_list[[1]]
+      rv_list <- do.call((if (is_by_row) "cbind" else "rbind"), rv_list)
       res_mtx <- if (!has_row_names) check_2d_matrix(rv_list_begin, is_by_row, vars, conds, parent_frame) else NULL
       if (is.null(res_mtx)) {
         return(as.matrix(rv_list))
