@@ -4,6 +4,7 @@
   (fixes https://github.com/patrickroocks/listcompr/issues/5)
 * fixed result type of gen.data.frame in conjunction with `byrow = TRUE`
   (fixes https://github.com/patrickroocks/listcompr/issues/6)
+* added a check to ensure that the inner expression for `gen.(named).(data.frame|matrix)` must be exactly one row
 
 # listcompr 0.2.5
 

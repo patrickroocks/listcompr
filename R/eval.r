@@ -247,7 +247,8 @@ get_vars_and_conditions <- function(l, is_var, is_cond, ctx) {
 
 # searches for 2-dim matrix without names/conditions, e.g. gen.matrix(i+j, i=1:3, j=1:4)
 check_2d_matrix <- function(first_row, is_by_row, vars, conds, parent_frame) {
-  if (!(    is.null(names(first_row))
+  if (!(    is.null(colnames(first_row))
+         && is.null(rownames(first_row))
          && length(first_row) == 1
          && length(vars) == 2 && length(conds) == 0)) return(NULL)
   
@@ -262,18 +263,59 @@ check_2d_matrix <- function(first_row, is_by_row, vars, conds, parent_frame) {
   return(list(nrow = length(nrow), ncol = length(ncol)))
 }
 
+check_one_row <- function(val)  {
+  if (nrow(val) > 1) {
+    stop(paste0("the inner expression was evaluated to a data frame with ", nrow(val), " rows, but expected exactly one row"), call. = FALSE)
+  }
+}
+
 # convert vector/list to data.frame
-make_df <- function(val, byrow) {
-  do_t <- if (byrow) function(x) as.data.frame(t(x), stringsAsFactors = FALSE) else identity
-  if (is.data.frame(val)) return(do_t(val))
-  # assume vector or list
-  res_names <- names(val)
-  if (is.null(res_names)) res_names <- rep("", length(val))
-  else if (!any(res_names == "")) return(do_t(as.data.frame(as.list(val), stringsAsFactors = FALSE)))
-  mask_unset <- (res_names == "")
-  res_names[mask_unset] <- paste0("V", which(mask_unset))
-  names(val) <- res_names
-  return(do_t(as.data.frame(as.list(val), stringsAsFactors = FALSE)))
+make_df_row <- function(val, byrow) {
+  if (!is.null(nrow(val))) {
+    check_one_row(val)
+    if (is.data.frame(val)) {
+      res <- val
+    } else {
+      # assume matrix
+      res <- as.data.frame(val)
+    }
+  } else {
+    # assume vector or list
+    res_names <- names(val)
+    if (is.null(res_names)) res_names <- rep("", length(val))
+    if (!any(res_names == "")) {
+      res <- as.list(val)
+    } else {
+      mask_unset <- (res_names == "")
+      res_names[mask_unset] <- paste0("V", which(mask_unset))
+      names(val) <- res_names
+      res <- as.list(val)
+    }
+    res <- as.data.frame(res, stringsAsFactors = FALSE)
+  }
+  
+  # transpose if inner elements of val shall be rows
+  if (byrow) res <- as.data.frame(t(res), stringsAsFactors = FALSE)
+  
+  return(res)
+}
+
+make_mtx_row <- function(val, is_by_row) {
+  if (!is.null(nrow(val))) {
+    check_one_row(val)
+    res <- val[1,,drop=FALSE]
+  } else {
+    res <- val
+  }
+  
+  # depending on list/vector/data frame we get either a column or row vector...
+  res <- as.matrix(unlist(res), rownames.force = FALSE)
+  
+  # ... which we bring into the correct format now
+  if (   ( is_by_row && (ncol(res) > 1 || !is.null(colnames(res))))
+      || (!is_by_row && (nrow(res) > 1 || !is.null(rownames(res)))) ) res <- t(res)
+  
+  return(res)
 }
 
 # ---- Fold executors -----
@@ -324,12 +366,14 @@ gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_fram
   is_format_df   <- output_format %in% c(OUTPUT_FORMAT[["DF"]],       OUTPUT_FORMAT[["DF_ROW"]])
   is_by_row      <- output_format %in% c(OUTPUT_FORMAT[["MTX_ROW"]],  OUTPUT_FORMAT[["DF_ROW"]])
   
-  # * Expansions
+  # * Expression expansions
   
   ctx <- list(parent_frame = parent_frame, req_var_ranges = !is_format_expr)
   res <- expand_expr(expr, vars, ctx)
   expr <- res[["expr"]]
   vars <- res[["vars"]]
+  
+  # * Name expansions
   
   has_row_names <- !is.null(name_str_expr)
   if (has_row_names) { # for named list/vectors/...
@@ -338,9 +382,8 @@ gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_fram
     name_str_expr <- res[["expr"]]
     vars          <- res[["vars"]]
   }
- 
   
-  # * Get Cartesian product and generate names
+  # * Get Cartesian product
   
   res_cart <- get_cartesian_df_after_expansion(vars, conds, parent_frame)
   cartesian_df <- res_cart[["cartesian_df"]]
@@ -355,8 +398,17 @@ gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_fram
     else                    return(NULL)
   }
   
+  # * Get names and create lambda for setting names later
+  
   if (has_row_names) {
     name_vec <- vapply(1:nrow(cartesian_df), function(i) eval(name_str_expr, cartesian_df[i,,drop=FALSE], parent_frame), "")
+  }
+  insert_outer_names <- function(res) {
+    if (has_row_names) {
+      if (is_by_row) colnames(res) <- name_vec
+      else           rownames(res) <- name_vec
+    }
+    return(res)
   }
   
   # * Apply expression and return
@@ -378,28 +430,21 @@ gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_fram
     return(rv)
     
   } else if (is_format_df || is_format_mtx) {
-    if (is_format_df || !is.null(names(expr))) { # no "auto names" for unnamed matrices
-      expr <- insert_names(expr)
-    }
+    expr <- insert_inner_names(expr, is_format_df)
     
     if (is_format_df) {
-      rv_df <- lapply(1:nrow(cartesian_df), function(i) make_df(eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), is_by_row))
+      rv_df <- lapply(1:nrow(cartesian_df), function(i) make_df_row(eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), is_by_row))
       rv_df <- do.call((if (is_by_row) "cbind" else "rbind"), rv_df)
-      if (has_row_names) {
-        if (is_by_row) colnames(rv_df) <- name_vec
-        else rownames(rv_df) <- name_vec
-      }
-      return(rv_df)
+      return(insert_outer_names(rv_df))
     } else { # matrix
-      rv_list <- lapply(1:nrow(cartesian_df), function(i) eval(expr, cartesian_df[i,,drop=FALSE], parent_frame))
-      if (has_row_names) names(rv_list) <- name_vec
+      rv_list <- lapply(1:nrow(cartesian_df), function(i) make_mtx_row(eval(expr, cartesian_df[i,,drop=FALSE], parent_frame), is_by_row))
       rv_list_begin <- rv_list[[1]]
-      rv_list <- do.call((if (is_by_row) "cbind" else "rbind"), rv_list)
+      rv_mtx <- do.call((if (is_by_row) "cbind" else "rbind"), rv_list)
       res_mtx <- if (!has_row_names) check_2d_matrix(rv_list_begin, is_by_row, vars, conds, parent_frame) else NULL
       if (is.null(res_mtx)) {
-        return(as.matrix(rv_list))
+        return(insert_outer_names(rv_mtx))
       } else {
-        return(matrix(rv_list, nrow = res_mtx[["nrow"]], ncol = res_mtx[["ncol"]], byrow = is_by_row))
+        return(matrix(rv_mtx, nrow = res_mtx[["nrow"]], ncol = res_mtx[["ncol"]], byrow = is_by_row))
       }
     }
   }

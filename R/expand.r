@@ -297,7 +297,13 @@ expand_expr <- function(expr, vars, ctx) {
 # ----- Insert names in lists and vectors ----- 
 
 # add default names, e.g. convert quote(c(a = 1, b)) to quote(c(a = 1, b = 2))
-insert_names <- function(expr) {
+insert_inner_names <- function(expr, is_format_df) {
+  
+  if (!is_format_df) {
+    # no "auto names" for unnamed matrices, but fill the gaps in existing names (or in data frames - where we want to avoid auto names like "x..y")
+    if (!(!is.null(names(expr)) || (length(expr) > 1 && as.character(expr[[1]]) == "data.frame"))) return(expr)
+  }
+  
   if (is.symbol(expr)) { # single symbol
     new_expr <- quote(c(X = X))
     names(new_expr)[2] <- as.character(expr)

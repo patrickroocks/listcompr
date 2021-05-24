@@ -15,9 +15,10 @@
 #'  \itemize{
 #'    \item For \code{gen.list} it may have arbitrary structure (including a list).
 #'    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
-#'    \item For \code{gen.data.frame} a (named) vector or list is expected which describes one row of the data frame.
+#'    \item For \code{gen.data.frame} a (named) vector or list is expected which describes exactly one row of the data frame.
 #'          Use \code{list(name = val)} if \code{val} is a non-fundamental type like \code{difftime}.
-#'    \item For \code{gen.matrix} either a (named) vector/list (like \code{gen.data.frame}) or a scalar is expected. 
+#'    \item For \code{gen.matrix} either a (named) vector/list (like \code{gen.data.frame}) or a scalar is expected.
+#'          In the first case, we expect the same as for \code{gen.data.frame}.
 #'          In the latter case we expect exactly two variables (inducing rows and columns where the order depends on \code{byrow}) within the \code{...} arguments.
 #'   }
 #'   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.

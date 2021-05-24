@@ -72,6 +72,9 @@ test_that("Basic data frame tests", {
   
   expect_equal(gen.data.frame(list(a = i, b = "x_{i}"), i = 1:2, byrow = TRUE),
                structure(list(V1 = c("1", "x_1"), V1 = c("2", "x_2")), class = "data.frame", row.names = c("a",  "b")))
+  
+  expect_error(gen.data.frame(data.frame(a = c(1,2)), i = 1:2),
+               "the inner expression was evaluated to a data frame with 2 rows, but expected exactly one row")
 })
 
 test_that("Named lists/vectors/dataframes tests", {
@@ -231,6 +234,18 @@ test_that("matrix standard tests", {
   expect_equal(gen.matrix(c(a = 10*i+j), i=1:2, j=1:3), matrix(c(11, 21, 12, 22, 13, 23), ncol = 1, byrow = TRUE, dimnames = list(NULL, "a")))
   expect_equal(gen.named.matrix("{i}{j}", 10*i+j, i=1:2, j=1:3),
                matrix(c(11, 21, 12, 22, 13, 23), ncol = 1, byrow = TRUE, dimnames = list(c("11", "21", "12", "22", "13", "23"))))
+  
+  expect_equal(gen.matrix(data.frame(a = 1, b = i), i = 1:2, byrow = TRUE),
+               matrix(c(1, 1, 1, 2), ncol = 2, dimnames = list(c("a",  "b"), NULL)))
+  expect_equal(gen.matrix(data.frame(x+y), x = 1:2, y = 1:2),
+               matrix(c(2, 3, 3, 4), ncol = 1, byrow = TRUE, dimnames = list(NULL, c("V1"))))
+  expect_equal(gen.matrix(list(x+y), x = 1:2, y = 1:2), matrix(c(2, 3, 3, 4), ncol = 2, byrow = TRUE))
+  
+  expect_equal(gen.matrix(matrix(c(1,i), ncol=2), i = 1:2, byrow = TRUE),
+               matrix(c(1, 1, 1, 2), ncol = 2, byrow = TRUE))
+  
+  expect_error(gen.matrix(data.frame(c(1,2)), i = 1),
+               "the inner expression was evaluated to a data frame with 2 rows, but expected exactly one row")
 })
 
 test_that("matrix 2dim tests", {
