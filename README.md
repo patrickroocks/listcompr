@@ -69,4 +69,4 @@ to see a vignette with some more examples.
 
 ## Contact
 
-To submit bugs or suggest improvements, feel free to [open a github issue](https://github.com/patrickroocks/listcompr/issues) or write a mail to me: Patrick Roocks, mail@p-roocks.de
+To submit bugs or suggest improvements, feel free to [open a issue](https://github.com/patrickroocks/listcompr/issues) or write a mail to me: Patrick Roocks, mail@p-roocks.de

@@ -272,20 +272,19 @@ check_one_row <- function(val)  {
 # convert vector/list to data.frame
 make_df_row <- function(val, byrow) {
   if (!is.null(nrow(val))) {
-    check_one_row(val)
     if (is.data.frame(val)) {
       res <- val
     } else {
-      # assume matrix
+      # assume matrix or similar
       res <- as.data.frame(val)
     }
   } else {
-    # assume vector or list
+    # assume vector, list, or similar
     res_names <- names(val)
     if (is.null(res_names)) res_names <- rep("", length(val))
     if (!any(res_names == "")) {
       res <- as.list(val)
-    } else {
+    } else { # insert V{i} names
       mask_unset <- (res_names == "")
       res_names[mask_unset] <- paste0("V", which(mask_unset))
       names(val) <- res_names
@@ -293,6 +292,9 @@ make_df_row <- function(val, byrow) {
     }
     res <- as.data.frame(res, stringsAsFactors = FALSE)
   }
+  
+  # check if we have just one row after conversion to data frame
+  check_one_row(res)
   
   # transpose if inner elements of val shall be rows
   if (byrow) res <- as.data.frame(t(res), stringsAsFactors = FALSE)
@@ -348,7 +350,7 @@ gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_fram
   
   expr <- expr # raise error if not existing
   if (is.null(names(l))) {
-    stop("no named variables are given, expected at least one named variable for creating range in the '...' parameters", call. = FALSE)
+    stop("no named variables are given, expected at least one named variable in the '...' parameters", call. = FALSE)
   }
   
   is_cond_or_var <- c(FALSE, rep(TRUE, length(names(l)) - 1))
@@ -460,7 +462,7 @@ gen_logical_internal <- function(expr, l, is_and, parent_frame) {
       # Return expr (boring...), no parent_frame in expr
       return(expr)
     } else {
-      stop("no named variables are given, expected at least one named variable for creating range in the '...' parameters", call. = FALSE)
+      stop("no named variables are given, expected at least one named variable in the '...' parameters", call. = FALSE)
     }
   }
   

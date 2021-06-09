@@ -268,9 +268,8 @@ gen.named.matrix <- function(str, expr, ..., byrow = FALSE) {
 #' The argument \code{expr} is partially evaluated, where all free variables are substituted for which a range is given.
 #' The other variables remain untouched.
 #' 
-#' @seealso \code{\link{gen.data.frame}} to generate data frames, 
-#'   \code{\link{gen.list}} to generate lists, 
-#'   \code{\link{gen.list.char}} to generate lists of characters, 
+#' @seealso \code{\link{gen.list}} to generate lists,
+#'   \code{\link{gen.named.list}} to generate named lists,  
 #'   and \link{listcompr} for an overview of all list comprehension functions.
 #' 
 #' @examples
@@ -351,6 +350,10 @@ gen.named.vector.expr <- function(str, expr, ...) {
 #' # Get all permutations of 1:4
 #' gen.data.frame(c(a_1, ..., a_4), a_ = 1:4, 
 #'                gen.logical.and(a_i != a_j, i = 1:4, j = (i+1):4))
+#'                
+#' # Get again the permutations of 1:4, using filter from dplyr 
+#' df <- gen.data.frame(c(a_1, ..., a_4), a_ = 1:4)
+#' dplyr::filter(df, !!gen.logical.and(a_i != a_j, i = 1:3, j = (i+1):4))
 #' 
 #' @export
 gen.logical.and <- function(expr, ...) {

@@ -39,6 +39,10 @@ gen.data.frame(c(x_1, ..., x_4), x_ = 1:10, x_1 + ... + x_4 == 10,
 # Get all permutations of 1:4
 gen.data.frame(c(a_1, ..., a_4), a_ = 1:4, 
                gen.logical.and(a_i != a_j, i = 1:4, j = (i+1):4))
+               
+# Get again the permutations of 1:4, using filter from dplyr 
+df <- gen.data.frame(c(a_1, ..., a_4), a_ = 1:4)
+dplyr::filter(df, !!gen.logical.and(a_i != a_j, i = 1:3, j = (i+1):4))
 
 }
 \seealso{

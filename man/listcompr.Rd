@@ -12,9 +12,10 @@ It is a light-weight package written in base R without any compiled code or depe
 
 
 \itemize{
-\item The main functionality of listcompr: generate lists (\code{\link{gen.list}}), vectors, and data frames.
-\item Generate lists/vectors of characters (\code{\link{gen.list.char}}) and named lists, vectors, and data frames.
-\item Generate expressions (\code{\link{gen.list.expr}}) containing lists and vectors, using helpers for conditions (\code{\link{gen.logical.and}}).
+\item The main functionality of listcompr: generate lists, vectors, and data frames: \code{\link{gen.list}}
+\item Generate named lists, vectors, and data frames: \code{\link{gen.named.list}}
+\item Generate expressions containing lists and vectors: \code{\link{gen.list.expr}}
+\item Generate conditions to be used in other functions of listcompr: \code{\link{gen.logical.and}}
 }
 }
 

@@ -52,8 +52,7 @@ eval(expr, data)
 
 }
 \seealso{
-\code{\link{gen.data.frame}} to generate data frames, 
-  \code{\link{gen.list}} to generate lists, 
-  \code{\link{gen.list.char}} to generate lists of characters, 
+\code{\link{gen.list}} to generate lists,
+  \code{\link{gen.named.list}} to generate named lists,  
   and \link{listcompr} for an overview of all list comprehension functions.
 }
