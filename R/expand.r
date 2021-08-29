@@ -231,6 +231,22 @@ expand_char <- function(char, vars, ctx) {
 
 # ----- Main expr expansion -----
 
+# all calltypes where we will create a (partially evaulated expression)
+# with this, it's possible to evaluated nested expressions, 
+# where place "a_i" in the inner expression, and a placeholder "a_" in the outer expression,
+# e.g. something like gen.data.frame(gen.named.list("a_{i}", a_i, i = 1:3), a_ = 1:2)
+# this does not really work with data frames in the inner expression, as gen.data.frame
+# needs evaluated rows to get width/height of each row (in make_df_row) to determine the final structure
+CTYPES <- list(gen.logical.and = 1, gen.logical.or = 2, 
+              gen.vector = 3, gen.vector.expr = 4, gen.list = 5, gen.list.expr = 6, 
+              gen.named.vector = 7, gen.named.vector.expr = 8, gen.named.list = 9, gen.named.list.expr = 10,
+              gen.matrix = 11, gen.named.matrix = 12, gen.data.frame = 13, gen.named.data.frame = 14)
+CTYPES_LOGICAL <- c(CTYPES$gen.logical.and, CTYPES$gen.logical.or)
+CTYPES_NAMED <- c(CTYPES$gen.named.vector, CTYPES$gen.named.vector.expr, CTYPES$gen.named.list, CTYPES$gen.named.list.expr)
+CTYPES_VECTOR <-c(CTYPES$gen.vector, CTYPES$gen.vector.expr, CTYPES$gen.named.vector, CTYPES$gen.named.vector.expr)
+CTYPES_NOEXPANSION <- c(CTYPES$gen.matrix, CTYPES$gen.named.matrix, CTYPES$gen.data.frame, CTYPES$gen.named.data.frame)
+
+
 # put i_ = a:b into (i_1 = a:b, ..., i_n = a:b) for all occurrences of i_j
 # put FUNC(a_1, ..., a_n) into FUNC(a_1, a_2, ..., a_n) (fully expanded n-ary expressions)
 # put also a_1 + ... + a_n into Reduce('+', list(a_2, a_3), a_1) (fully expanded binary repeated expressions)
@@ -257,38 +273,48 @@ expand_expr <- function(expr, vars, ctx) {
       for (sub_var_name in subvars) {
         vars <- fill_vars_by_range(vars, sub_var_name, varname_prefix, ctx[["req_var_ranges"]])
       }
-    } else if (expr[1] == quote(gen.logical.and()) || expr[1] == quote(gen.logical.or()) ||
-               expr[1] == quote(gen.vector.expr()) || expr[1] == quote(gen.named.vector.expr())  ||
-               expr[1] == quote(gen.list.expr())   || expr[1] == quote(gen.named.list.expr())) {
+    } else {
+      callname = as.character(expr[1][[1]])
+      if (!(callname %in% names(CTYPES))) {
+        return(expand_nested_expr(expr, vars, ctx))
+      }
+      
+      calltype = CTYPES[[callname]]
+      
+      if (calltype %in% CTYPES_NOEXPANSION) {
+        # no "..." expansion in an inner gen.data.frame call!
+        return(list(expr = expr, vars = vars))
+      }
+      
       # call expression-generating list comprehension function
       if (length(expr) == 1) stop(paste0("missing arguments in '", as.character(as.expression(expr)), "'"), call. = FALSE)
       lst_args <- expr
       lst_args[1] <- quote(list())
       lst_args[2] <- NULL # remove base expression / name expression
-      if (expr[1] == quote(gen.logical.and()) || expr[1] == quote(gen.logical.or())) {
-        is_and <- (expr[1] == quote(gen.logical.and()))
+      if (calltype %in% CTYPES_LOGICAL) {
+        is_and <- (calltype == CTYPES$gen.logical.and)
         expr <- gen_logical_internal(expr[2][[1]], lst_args, is_and, ctx[["parent_frame"]])
         res <- expand_expr(expr, vars, ctx)
         expr <- res[[1]]
         vars <- res[[2]]
       } else {
-        if (expr[1] == quote(gen.vector.expr()) || expr[1] == quote(gen.named.vector.expr())) {
+        if (calltype %in% CTYPES_VECTOR) {
           output_format <- OUTPUT_FORMAT[["VEC_EXPR"]] 
         } else {
           output_format <- OUTPUT_FORMAT[["LST_EXPR"]]
         }
-        has_names <- (expr[1] == quote(gen.named.list.expr()) || expr[1] == quote(gen.named.vector.expr()))
+        has_names <- (calltype %in% CTYPES_NAMED)
         base_expr <- if (has_names) expr[3][[1]] else expr[2][[1]]
         str_expr <- if (has_names) expr[2][[1]] else NULL
         if (has_names) lst_args[2] <- NULL
 
-        expr <- gen_list_internal(base_expr, lst_args, output_format, str_expr, ctx[["parent_frame"]])
-        res <- expand_expr(expr, vars, ctx)
-        expr <- res[[1]]
-        vars <- res[[2]]
+        eval_expr <- tryCatch(gen_list_internal(base_expr, lst_args, output_format, str_expr, ctx[["parent_frame"]]), error = function(e) NULL)
+        if (!is.null(eval_expr)) {
+          res <- expand_expr(eval_expr, vars, ctx)
+          expr <- res[[1]]
+          vars <- res[[2]]
+        }
       }
-    } else {
-      return(expand_nested_expr(expr, vars, ctx))
     }
   }
   return(list(expr = expr, vars = vars))

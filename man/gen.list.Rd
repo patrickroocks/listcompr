@@ -7,19 +7,19 @@
 \alias{gen.matrix}
 \title{Generate Lists, Vectors, Data Frames and Matrices with List Comprehension}
 \usage{
-gen.list(expr, ...)
+gen.list(.expr, ...)
 
-gen.vector(expr, ...)
+gen.vector(.expr, ...)
 
-gen.data.frame(expr, ..., byrow = FALSE)
+gen.data.frame(.expr, ..., byrow = FALSE)
 
-gen.matrix(expr, ..., byrow = FALSE)
+gen.matrix(.expr, ..., byrow = FALSE)
 }
 \arguments{
-\item{expr}{A base expression containing free variables which is evaluated for all combinations of variables, 
+\item{.expr}{A base expression containing free variables which is evaluated for all combinations of variables, 
   where the combinations of variables are given by the ranges and conditions (see \code{...} parameters).
 
-Expected structure of \code{expr}:
+Expected structure of \code{.expr}:
  \itemize{
    \item For \code{gen.list} it may have arbitrary structure (including a list).
    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
@@ -29,41 +29,41 @@ Expected structure of \code{expr}:
          In the first case, we expect the same as for \code{gen.data.frame}.
          In the latter case we expect exactly two variables (inducing rows and columns where the order depends on \code{byrow}) within the \code{...} arguments.
   }
-  Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.}
+  Within \code{.expr} it is allowed to use functions and predefined constants from the parent environment.}
 
 \item{...}{Arbitrary many variable ranges and conditions.
-For all free variables occurring in \code{expr} a range must be assigned, e.g., \code{x = 1:3, y = 1:5} for an expression \code{x + y}. 
+For all free variables occurring in \code{.expr} a range must be assigned, e.g., \code{x = 1:3, y = 1:5} for an expression \code{x + y}. 
 At least one variable range is required.
 The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} or a substitution like \code{x = 1:3, y = 2 * x} is allowed.
 The generated values can be further restricted by conditions like \code{x <= y}.}
 
-\item{byrow}{Logical. If \code{FALSE} (the default), the elements of a vector within \code{expr} are taken as columns. 
+\item{byrow}{Logical. If \code{FALSE} (the default), the elements of a vector within \code{.expr} are taken as columns. 
 Otherwise, they are taken as rows.}
 }
 \value{
 The result of \code{gen.list} is a list (a vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), 
-where all the free variables in \code{expr} are substituted.
+where all the free variables in \code{.expr} are substituted.
 The function \code{gen.vector} returns a vector while \code{gen.list} may contain also more complex substructures (like vectors or lists).
 
-The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
-The base expression \code{expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
+The output of \code{gen.data.frame} is a data frame where each substituted \code{.expr} entry is one row.
+The base expression \code{.expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
 If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
 Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
 
 The result of \code{gen.matrix}:
 \itemize{
-  \item It's similar to \code{gen.data.frame}, if \code{expr} evaluates to a vector of length > 1, or row/column names are given.
-        Each substituted \code{expr} entry is one row of the matrix.
+  \item It's similar to \code{gen.data.frame}, if \code{.expr} evaluates to a vector of length > 1, or row/column names are given.
+        Each substituted \code{.expr} entry is one row of the matrix.
         In contrast to \code{gen.data.frame}, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
-        If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
-  \item It's a matrix where the rows and columns are induced by the two variables within \code{...}, if \code{expr} is a scalar, and no names or conditions are given.
+        If the \code{.expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
+  \item It's a matrix where the rows and columns are induced by the two variables within \code{...}, if \code{.expr} is a scalar, and no names or conditions are given.
         If \code{byrow} is \code{FALSE}, the second variable (i.e., the inner loop) refers to the columns, otherwise it refers to the rows.
         For instance, \code{gen.matrix(i + j, i = 1:3, j = 1:2)} is a matrix with 3 rows and 2 columns.
         For \code{gen.matrix(i + j, i = 1:3, j = 1:2, byrow = TRUE)} we get 2 rows and 3 columns.
 }
 
 All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
-For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.
+For instance, the term \code{sum(x,y)} (within \code{.expr} or a condition) is equivalent to \code{x+y}.
 }
 \description{
 Functions to transform a base expression containing free variables into a list, a vector, a data frame, or a matrix
@@ -129,7 +129,7 @@ gen.data.frame(c(x_1, ..., x_3), x_ = 1:10, x_1 + ... + x_3 == 10)
 gen.data.frame(c(x_1, ..., x_3), x_1 = 1:10, x_2 = x_1:10, x_3 = x_2:10,
                x_1 + ... + x_3 == 10)
 
-# A data.frame containing the numbers in 2:20, the sum of their divisors
+# A data frame containing the numbers in 2:20, the sum of their divisors
 # and a flag if they are "perfect" (sum of divisors equals the number)
 gen.data.frame(list(n, sumdiv, perfect = (n == sumdiv)), n = 2:20, 
                sumdiv = sum(gen.vector(x, x = 1:(n-1), n \%\% x == 0)))

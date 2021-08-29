@@ -99,10 +99,13 @@ test_that("Named lists/vectors/dataframes tests", {
   
   expect_equal(gen.named.list.expr("a_{i}", a_i, i = 1:5), quote(list(a_1 = a_1, a_2 = a_2, a_3 = a_3, a_4 = a_4, a_5 = a_5)))
   
-  expect_equal(gen.named.vector.expr("v{v_1}", v_1, v_ = 1:2), quote(c(v1 = 1L, v2 = 2L)))
+  expect_equal(gen.named.vector.expr(paste0("v", "{v_1}"), v_1, v_ = 1:2), quote(c(v1 = 1L, v2 = 2L)))
 
-  expect_equal(gen.data.frame(gen.named.vector.expr("a_{i}", a_i, i = 1:3), a_ = 1:2),
-               data.frame(a_1 = c(1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L), a_2 = c(1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L), a_3 = c(1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L)))
+  expect_equal(gen.data.frame(gen.named.vector.expr(paste0("x", "a_{i}"), a_i, i = 1:3), a_ = 1:2),
+               data.frame(xa_1 = c(1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L), xa_2 = c(1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L), xa_3 = c(1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L)))
+  
+  expect_equal(gen.data.frame(gen.named.list(paste0("x", "a_{i}"), a_i, i = 1:3), a_ = 1:2),
+               data.frame(xa_1 = c(1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L), xa_2 = c(1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L), xa_3 = c(1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L)))
   
   expect_equal(gen.named.data.frame("col_{i}", 10 * i + c(a = 1, b = 2), i = 1:2),
                data.frame(a = c(11, 21), b = c(12, 22), row.names = c("col_1",  "col_2")))
@@ -128,6 +131,9 @@ test_that("Named lists/vectors/dataframes tests", {
   
   expect_equal(gen.data.frame(gen.named.list('a_{j}', j * i, j = 1:2), i = 1:3),
                data.frame(a_1 = 1:3, a_2 = c(2L, 4L, 6L)))
+
+  expect_equal(gen.named.data.frame("x{n}", gen.named.data.frame(paste0(a_1, ..., a_3), sum(a_1, ..., a_3, n)[1], a_ = 1:2, byrow = TRUE), n = 1:2),
+               structure(list("111" = 4:5, "211" = 5:6, "121" = 5:6, "221" = 6:7,      "112" = 5:6, "212" = 6:7, "122" = 6:7, "222" = 7:8), row.names = c("x1",  "x2"), class = "data.frame"))
 })
 
 test_that("three dots tests", {

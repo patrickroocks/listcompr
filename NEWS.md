@@ -1,3 +1,10 @@
+# listcompr 0.4.0 (dev)
+
+* renamed `expr` and `str` to `.expr` and `.str` in all the `gen....` functions to allow variables like `s` and `e`
+  (fixes https://github.com/patrickroocks/listcompr/issues/7)
+* allow `(x_1, ..., x_n)` short-cuts in nested expressions
+* allow `a_i` placeholders within nested vector and list expressions
+
 # listcompr 0.3.0
 
 * modified internal conversion from lists to data frames in `gen.data.frame` such that non-fundamental types are accepted

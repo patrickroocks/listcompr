@@ -7,25 +7,25 @@
 \alias{gen.named.vector.expr}
 \title{Generate List and Vector Expressions with List Comprehension}
 \usage{
-gen.list.expr(expr, ...)
+gen.list.expr(.expr, ...)
 
-gen.vector.expr(expr, ...)
+gen.vector.expr(.expr, ...)
 
-gen.named.list.expr(str, expr, ...)
+gen.named.list.expr(.str, .expr, ...)
 
-gen.named.vector.expr(str, expr, ...)
+gen.named.vector.expr(.str, .expr, ...)
 }
 \arguments{
-\item{expr}{A base expression which is partially evaluated for all combinations of variables. 
+\item{.expr}{A base expression which is partially evaluated for all combinations of variables. 
 It may still contain free variables.}
 
 \item{...}{Arbitrary many variable ranges and conditions.}
 
-\item{str}{A character pattern, containing expressions to be evaluated in \{\}-brackets.}
+\item{.str}{A character pattern, containing expressions to be evaluated in \{\}-brackets.}
 }
 \value{
 Returns an expression containing a list or a vector which might be evaluated later.
-The argument \code{expr} is partially evaluated, where all free variables are substituted for which a range is given.
+The argument \code{.expr} is partially evaluated, where all free variables are substituted for which a range is given.
 The other variables remain untouched.
 }
 \description{
@@ -33,9 +33,9 @@ Functions to transform a base expression containing free variables into a list o
 based on variable ranges and additional conditions.
 }
 \details{
-See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
+See \code{\link{gen.list}} for more details on the \code{.expr} and \code{...} parameters.
 
-See \code{\link{gen.named.list}} for more details on the \code{str} parameter.
+See \code{\link{gen.named.list}} for more details on the \code{.str} parameter.
 
 For variables with underscores additionally the evaluation of indices in \code{()}-brackets is supported.
 For example, an expression \code{x_(i+1)} is evaluated as \code{x_3} for \code{i = 2}.

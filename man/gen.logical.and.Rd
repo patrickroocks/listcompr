@@ -5,17 +5,17 @@
 \alias{gen.logical.or}
 \title{Generate Logical Conditions with List Comprehension}
 \usage{
-gen.logical.and(expr, ...)
+gen.logical.and(.expr, ...)
 
-gen.logical.or(expr, ...)
+gen.logical.or(.expr, ...)
 }
 \arguments{
-\item{expr}{A base expression which is partially evaluated for all combinations of variables. It may still contain free variables.}
+\item{.expr}{A base expression which is partially evaluated for all combinations of variables. It may still contain free variables.}
 
 \item{...}{Arbitrary many variable ranges and conditions.}
 }
 \value{
-Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{expr},
+Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{.expr},
 where all free variables are substituted for which a range is given. The other variables remain untouched.
 
 The generated condition may be used within the the conditions of \code{\link{gen.list}} and similar functions from this package.
@@ -24,7 +24,7 @@ The generated condition may be used within the the conditions of \code{\link{gen
 Functions to compose and-/or-connected logical conditions, based on variable ranges and additional conditions.
 }
 \details{
-See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
+See \code{\link{gen.list}} for more details on the \code{.expr} and \code{...} parameters.
 
 For variables with underscores additionally the evaluation of indices in \code{()}-brackets is supported. For example, an expression \code{x_(i+1)} is evaluated as \code{x_3} for \code{i = 2}.
 }

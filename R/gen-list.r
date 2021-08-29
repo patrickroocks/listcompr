@@ -8,10 +8,10 @@
 #' based on variable ranges and additional conditions.
 #'
 #' @name gen.list
-#' @param expr A base expression containing free variables which is evaluated for all combinations of variables, 
+#' @param .expr A base expression containing free variables which is evaluated for all combinations of variables, 
 #'   where the combinations of variables are given by the ranges and conditions (see \code{...} parameters).
 #' 
-#' Expected structure of \code{expr}:
+#' Expected structure of \code{.expr}:
 #'  \itemize{
 #'    \item For \code{gen.list} it may have arbitrary structure (including a list).
 #'    \item For \code{gen.vector} a value (i.e., a vector of length 1) is expected.
@@ -21,40 +21,40 @@
 #'          In the first case, we expect the same as for \code{gen.data.frame}.
 #'          In the latter case we expect exactly two variables (inducing rows and columns where the order depends on \code{byrow}) within the \code{...} arguments.
 #'   }
-#'   Within \code{expr} it is allowed to use functions and predefined constants from the parent environment.
+#'   Within \code{.expr} it is allowed to use functions and predefined constants from the parent environment.
 #' @param ... Arbitrary many variable ranges and conditions.
-#'   For all free variables occurring in \code{expr} a range must be assigned, e.g., \code{x = 1:3, y = 1:5} for an expression \code{x + y}. 
+#'   For all free variables occurring in \code{.expr} a range must be assigned, e.g., \code{x = 1:3, y = 1:5} for an expression \code{x + y}. 
 #'   At least one variable range is required.
 #'   The ranges may depend on each other, e.g., \code{x = 1:3, y = x:3} or a substitution like \code{x = 1:3, y = 2 * x} is allowed.
 #'   The generated values can be further restricted by conditions like \code{x <= y}.
-#' @param byrow Logical. If \code{FALSE} (the default), the elements of a vector within \code{expr} are taken as columns. 
+#' @param byrow Logical. If \code{FALSE} (the default), the elements of a vector within \code{.expr} are taken as columns. 
 #'   Otherwise, they are taken as rows.
 #'   
 #' @return 
 #' 
 #' The result of \code{gen.list} is a list (a vector for \code{gen.vector}) containing an entry for each combination of the free variables (i.e., the Cartesian product), 
-#' where all the free variables in \code{expr} are substituted.
+#' where all the free variables in \code{.expr} are substituted.
 #' The function \code{gen.vector} returns a vector while \code{gen.list} may contain also more complex substructures (like vectors or lists).
 #' 
-#' The output of \code{gen.data.frame} is a data frame where each substituted \code{expr} entry is one row.
-#' The base expression \code{expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
+#' The output of \code{gen.data.frame} is a data frame where each substituted \code{.expr} entry is one row.
+#' The base expression \code{.expr} should contain a (named) vector or list, such that each entry of this vector becomes a column of the returned data frame.
 #' If the vector contains a single literal without a name, this is taken as column name. For instance, \code{gen.data.frame(a, a = 1:5)} returns the same as \code{gen.data.frame(c(a = a), a = 1:5)}.
 #' Default names 'V1', 'V2', ... are used, if no names are given and names can't be automatically detected.
 #' 
 #' The result of \code{gen.matrix}:
 #' \itemize{
-#'   \item It's similar to \code{gen.data.frame}, if \code{expr} evaluates to a vector of length > 1, or row/column names are given.
-#'         Each substituted \code{expr} entry is one row of the matrix.
+#'   \item It's similar to \code{gen.data.frame}, if \code{.expr} evaluates to a vector of length > 1, or row/column names are given.
+#'         Each substituted \code{.expr} entry is one row of the matrix.
 #'         In contrast to \code{gen.data.frame}, column names are not auto-generated, e.g., \code{gen.matrix(c(a_1, a_2), a_ = 1:2)} is an unnamed matrix.
-#'         If the \code{expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
-#'   \item It's a matrix where the rows and columns are induced by the two variables within \code{...}, if \code{expr} is a scalar, and no names or conditions are given.
+#'         If the \code{.expr} argument has explicit names (e.g., \code{c(a_1 = a_1, a_2 = a_2)}), these column names are assigned to the resulting matrix.
+#'   \item It's a matrix where the rows and columns are induced by the two variables within \code{...}, if \code{.expr} is a scalar, and no names or conditions are given.
 #'         If \code{byrow} is \code{FALSE}, the second variable (i.e., the inner loop) refers to the columns, otherwise it refers to the rows.
 #'         For instance, \code{gen.matrix(i + j, i = 1:3, j = 1:2)} is a matrix with 3 rows and 2 columns.
 #'         For \code{gen.matrix(i + j, i = 1:3, j = 1:2, byrow = TRUE)} we get 2 rows and 3 columns.
 #' }
 #' 
 #' All expressions and conditions are applied to each combination of the free variables separately, i.e., they are applied row-wise and not vector-wise. 
-#' For instance, the term \code{sum(x,y)} (within \code{expr} or a condition) is equivalent to \code{x+y}.
+#' For instance, the term \code{sum(x,y)} (within \code{.expr} or a condition) is equivalent to \code{x+y}.
 #' 
 #' @section Indices for variables: 
 #' 
@@ -118,7 +118,7 @@
 #' gen.data.frame(c(x_1, ..., x_3), x_1 = 1:10, x_2 = x_1:10, x_3 = x_2:10,
 #'                x_1 + ... + x_3 == 10)
 #' 
-#' # A data.frame containing the numbers in 2:20, the sum of their divisors
+#' # A data frame containing the numbers in 2:20, the sum of their divisors
 #' # and a flag if they are "perfect" (sum of divisors equals the number)
 #' gen.data.frame(list(n, sumdiv, perfect = (n == sumdiv)), n = 2:20, 
 #'                sumdiv = sum(gen.vector(x, x = 1:(n-1), n %% x == 0)))
@@ -127,33 +127,33 @@
 #' gen.matrix(if (i == j) i else 0, i = 1:5, j = 1:5)
 #' 
 #' @export
-gen.list <- function(expr, ...) {
-  expr <- substitute(expr)
+gen.list <- function(.expr, ...) {
+  expr <- substitute(.expr)
   l <- substitute(list(...))
   return(gen_list_internal(expr, l, OUTPUT_FORMAT[["LST"]], NULL, parent.frame()))
 }
 
 #' @rdname gen.list
 #' @export
-gen.vector <- function(expr, ...) {
-  expr <- substitute(expr)
+gen.vector <- function(.expr, ...) {
+  expr <- substitute(.expr)
   l <- substitute(list(...))
   return(gen_list_internal(expr, l, OUTPUT_FORMAT[["VEC"]], NULL, parent.frame()))
 }
 
 #' @rdname gen.list
 #' @export
-gen.data.frame <- function(expr, ..., byrow = FALSE) {
+gen.data.frame <- function(.expr, ..., byrow = FALSE) {
   l <- substitute(list(...))
-  expr <- substitute(expr)
+  expr <- substitute(.expr)
   return(gen_list_internal(expr, l, if (byrow) OUTPUT_FORMAT[["DF_ROW"]] else OUTPUT_FORMAT[["DF"]], NULL, parent.frame()))
 }
 
 #' @rdname gen.list
 #' @export
-gen.matrix <- function(expr, ..., byrow = FALSE) {
+gen.matrix <- function(.expr, ..., byrow = FALSE) {
   l <- substitute(list(...))
-  expr <- substitute(expr)
+  expr <- substitute(.expr)
   return(gen_list_internal(expr, l, if (byrow) OUTPUT_FORMAT[["MTX_ROW"]] else OUTPUT_FORMAT[["MTX"]], NULL, parent.frame()))
 }
 
@@ -168,25 +168,25 @@ gen.matrix <- function(expr, ..., byrow = FALSE) {
 #' 
 #' @name gen.named.list
 #' 
-#' @param str A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
+#' @param .str A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
 #'   Double brackets are transformed into a single bracket without evaluating the inner expression.
 #'   For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} for \code{x = 1}.
-#' @param expr A base expression containing free variables which is evaluated for all combinations of variables. 
+#' @param .expr A base expression containing free variables which is evaluated for all combinations of variables. 
 #' @param ... Arbitrary many variable ranges and conditions.
-#' @param byrow Logical. If \code{FALSE} (the default), the elements of an \code{expr} vector are taken as columns. 
+#' @param byrow Logical. If \code{FALSE} (the default), the elements of an \code{.expr} vector are taken as columns. 
 #'   Otherwise, they are taken as rows.
 #' 
 #' @details 
 #' 
-#' The free variables in the inner expressions (i.e., the content of the \code{\{\}}-brackets) of \code{expr} are evaluated in the same way as expressions in \code{\link{gen.list}}.
+#' The free variables in the inner expressions (i.e., the content of the \code{\{\}}-brackets) of \code{.expr} are evaluated in the same way as expressions in \code{\link{gen.list}}.
 #' 
-#' See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
+#' See \code{\link{gen.list}} for more details on the \code{.expr} and \code{...} parameters.
 #' 
 #' @return 
 #' 
 #' These functions return lists, vectors, data frames, and matrices.
 #' They work very similar to their counterparts without ".named".
-#' Additionally the vector of characters, induced by \code{str}, serves as a vector of names for the generated structures. 
+#' Additionally the vector of characters, induced by \code{.str}, serves as a vector of names for the generated structures. 
 #' In case of lists or vectors, the result is a named list or a named vector. For data frames and matrices, the names are taken as row names.
 #' 
 #' @seealso \code{\link{gen.list}} for explanations on list and vector comprehension,
@@ -204,37 +204,37 @@ gen.matrix <- function(expr, ..., byrow = FALSE) {
 #'                  byrow = TRUE)
 #' 
 #' @export
-gen.named.list <- function(str, expr, ...) {
+gen.named.list <- function(.str, .expr, ...) {
   l <- substitute(list(...))
-  str <- substitute(str)
-  expr <- substitute(expr)
+  str <- substitute(.str)
+  expr <- substitute(.expr)
   return(gen_list_internal(expr, l, OUTPUT_FORMAT[["LST"]], str, parent.frame()))
 }
 
 #' @rdname gen.named.list
 #' @export
-gen.named.vector <- function(str, expr, ...) {
+gen.named.vector <- function(.str, .expr, ...) {
   l <- substitute(list(...))
-  str <- substitute(str)
-  expr <- substitute(expr)
+  str <- substitute(.str)
+  expr <- substitute(.expr)
   return(gen_list_internal(expr, l, OUTPUT_FORMAT[["VEC"]], str, parent.frame()))
 }
 
 #' @rdname gen.named.list
 #' @export
-gen.named.data.frame <- function(str, expr, ..., byrow = FALSE) {
+gen.named.data.frame <- function(.str, .expr, ..., byrow = FALSE) {
   l <- substitute(list(...))
-  str <- substitute(str)
-  expr <- substitute(expr)
+  str <- substitute(.str)
+  expr <- substitute(.expr)
   return(gen_list_internal(expr, l, if (byrow) OUTPUT_FORMAT[["DF_ROW"]] else OUTPUT_FORMAT[["DF"]], str, parent.frame()))
 }
 
 #' @rdname gen.named.list
 #' @export
-gen.named.matrix <- function(str, expr, ..., byrow = FALSE) {
+gen.named.matrix <- function(.str, .expr, ..., byrow = FALSE) {
   l <- substitute(list(...))
-  str <- substitute(str)
-  expr <- substitute(expr)
+  str <- substitute(.str)
+  expr <- substitute(.expr)
   return(gen_list_internal(expr, l, if (byrow) OUTPUT_FORMAT[["MTX_ROW"]] else OUTPUT_FORMAT[["MTX"]], str, parent.frame()))
 }
 
@@ -248,16 +248,16 @@ gen.named.matrix <- function(str, expr, ..., byrow = FALSE) {
 #' based on variable ranges and additional conditions. 
 #' 
 #' @name gen.list.expr
-#' @param expr A base expression which is partially evaluated for all combinations of variables. 
+#' @param .expr A base expression which is partially evaluated for all combinations of variables. 
 #'   It may still contain free variables.
-#' @param str A character pattern, containing expressions to be evaluated in \{\}-brackets. 
+#' @param .str A character pattern, containing expressions to be evaluated in \{\}-brackets. 
 #' @param ... Arbitrary many variable ranges and conditions.
 #' 
 #' @details 
 #' 
-#' See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
+#' See \code{\link{gen.list}} for more details on the \code{.expr} and \code{...} parameters.
 #' 
-#' See \code{\link{gen.named.list}} for more details on the \code{str} parameter.
+#' See \code{\link{gen.named.list}} for more details on the \code{.str} parameter.
 #' 
 #' For variables with underscores additionally the evaluation of indices in \code{()}-brackets is supported.
 #' For example, an expression \code{x_(i+1)} is evaluated as \code{x_3} for \code{i = 2}.
@@ -265,7 +265,7 @@ gen.named.matrix <- function(str, expr, ..., byrow = FALSE) {
 #' @return
 #' 
 #' Returns an expression containing a list or a vector which might be evaluated later.
-#' The argument \code{expr} is partially evaluated, where all free variables are substituted for which a range is given.
+#' The argument \code{.expr} is partially evaluated, where all free variables are substituted for which a range is given.
 #' The other variables remain untouched.
 #' 
 #' @seealso \code{\link{gen.list}} to generate lists,
@@ -283,36 +283,36 @@ gen.named.matrix <- function(str, expr, ..., byrow = FALSE) {
 #' eval(expr, data)
 #' 
 #' @export
-gen.list.expr <- function(expr, ...) {
-  expr <- substitute(expr)
+gen.list.expr <- function(.expr, ...) {
+  expr <- substitute(.expr)
   l <- substitute(list(...))
   return(gen_list_internal(expr, l, OUTPUT_FORMAT[["LST_EXPR"]], NULL, parent.frame()))
 }
 
 #' @rdname gen.list.expr
 #' @export
-gen.vector.expr <- function(expr, ...) {
-  expr <- substitute(expr)
+gen.vector.expr <- function(.expr, ...) {
+  expr <- substitute(.expr)
   l <- substitute(list(...))
   return(gen_list_internal(expr, l, OUTPUT_FORMAT[["VEC_EXPR"]], NULL, parent.frame()))
 }
 
 #' @rdname gen.list.expr
 #' @export
-gen.named.list.expr <- function(str, expr, ...) {
+gen.named.list.expr <- function(.str, .expr, ...) {
   l <- substitute(list(...))
-  expr <- substitute(expr)
-  return(gen_list_internal(expr, l, OUTPUT_FORMAT[["LST_EXPR"]], str, parent.frame()))
+  expr <- substitute(.expr)
+  return(gen_list_internal(expr, l, OUTPUT_FORMAT[["LST_EXPR"]], .str, parent.frame()))
 }
 
 #' @rdname gen.list.expr
 #' @export
-gen.named.vector.expr <- function(str, expr, ...) {
+gen.named.vector.expr <- function(.str, .expr, ...) {
   l <- substitute(list(...))
-  expr <- substitute(expr)
+  expr <- substitute(.expr)
+  str <- substitute(.str)
   return(gen_list_internal(expr, l, OUTPUT_FORMAT[["VEC_EXPR"]], str, parent.frame()))
 }
-
 
 #' Generate Logical Conditions with List Comprehension
 #' 
@@ -320,18 +320,18 @@ gen.named.vector.expr <- function(str, expr, ...) {
 #' 
 #' Functions to compose and-/or-connected logical conditions, based on variable ranges and additional conditions.
 #'
-#' @param expr A base expression which is partially evaluated for all combinations of variables. It may still contain free variables.
+#' @param .expr A base expression which is partially evaluated for all combinations of variables. It may still contain free variables.
 #' @param ... Arbitrary many variable ranges and conditions.
 #' 
 #' @details
 #' 
-#' See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
+#' See \code{\link{gen.list}} for more details on the \code{.expr} and \code{...} parameters.
 #' 
 #' For variables with underscores additionally the evaluation of indices in \code{()}-brackets is supported. For example, an expression \code{x_(i+1)} is evaluated as \code{x_3} for \code{i = 2}.
 #' 
 #' @return
 #' 
-#' Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{expr},
+#' Returns an expression \code{expr_1 & ... & expr_n} or \code{expr_1 | ... | expr_n} where \code{expr_i} is generated from \code{.expr},
 #' where all free variables are substituted for which a range is given. The other variables remain untouched.
 #' 
 #' The generated condition may be used within the the conditions of \code{\link{gen.list}} and similar functions from this package.
@@ -356,16 +356,16 @@ gen.named.vector.expr <- function(str, expr, ...) {
 #' dplyr::filter(df, !!gen.logical.and(a_i != a_j, i = 1:3, j = (i+1):4))
 #' 
 #' @export
-gen.logical.and <- function(expr, ...) {
-  expr <- substitute(expr)
+gen.logical.and <- function(.expr, ...) {
+  expr <- substitute(.expr)
   l <- substitute(list(...))
   return(gen_logical_internal(expr, l, TRUE, parent.frame()))
 }
 
 #' @rdname gen.logical.and
 #' @export
-gen.logical.or <- function(expr, ...) {
-  expr <- substitute(expr)
+gen.logical.or <- function(.expr, ...) {
+  expr <- substitute(.expr)
   l <- substitute(list(...))
   return(gen_logical_internal(expr, l, FALSE, parent.frame()))
 }

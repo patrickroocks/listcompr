@@ -7,30 +7,30 @@
 \alias{gen.named.matrix}
 \title{Generate Named Lists, Vectors, Data Frames, and Matrices with List Comprehension}
 \usage{
-gen.named.list(str, expr, ...)
+gen.named.list(.str, .expr, ...)
 
-gen.named.vector(str, expr, ...)
+gen.named.vector(.str, .expr, ...)
 
-gen.named.data.frame(str, expr, ..., byrow = FALSE)
+gen.named.data.frame(.str, .expr, ..., byrow = FALSE)
 
-gen.named.matrix(str, expr, ..., byrow = FALSE)
+gen.named.matrix(.str, .expr, ..., byrow = FALSE)
 }
 \arguments{
-\item{str}{A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
+\item{.str}{A character, containing expressions to be evaluated in \code{\{\}}-brackets, e.g., \code{"a{x}"} is transformed into \code{"a1"} for \code{x = 1}. 
 Double brackets are transformed into a single bracket without evaluating the inner expression.
 For instance, \code{"var{x + 1}_{{a}}"} is transformed into \code{"var2_{a}"} for \code{x = 1}.}
 
-\item{expr}{A base expression containing free variables which is evaluated for all combinations of variables.}
+\item{.expr}{A base expression containing free variables which is evaluated for all combinations of variables.}
 
 \item{...}{Arbitrary many variable ranges and conditions.}
 
-\item{byrow}{Logical. If \code{FALSE} (the default), the elements of an \code{expr} vector are taken as columns. 
+\item{byrow}{Logical. If \code{FALSE} (the default), the elements of an \code{.expr} vector are taken as columns. 
 Otherwise, they are taken as rows.}
 }
 \value{
 These functions return lists, vectors, data frames, and matrices.
 They work very similar to their counterparts without ".named".
-Additionally the vector of characters, induced by \code{str}, serves as a vector of names for the generated structures. 
+Additionally the vector of characters, induced by \code{.str}, serves as a vector of names for the generated structures. 
 In case of lists or vectors, the result is a named list or a named vector. For data frames and matrices, the names are taken as row names.
 }
 \description{
@@ -38,9 +38,9 @@ Functions to transform patterns with placeholders into characters or into names 
 based on variable ranges and additional conditions.
 }
 \details{
-The free variables in the inner expressions (i.e., the content of the \code{\{\}}-brackets) of \code{expr} are evaluated in the same way as expressions in \code{\link{gen.list}}.
+The free variables in the inner expressions (i.e., the content of the \code{\{\}}-brackets) of \code{.expr} are evaluated in the same way as expressions in \code{\link{gen.list}}.
 
-See \code{\link{gen.list}} for more details on the \code{expr} and \code{...} parameters.
+See \code{\link{gen.list}} for more details on the \code{.expr} and \code{...} parameters.
 }
 \examples{
 # sum up 1:i for i in 1:5
