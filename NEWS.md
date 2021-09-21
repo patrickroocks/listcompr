@@ -4,6 +4,8 @@
   (fixes https://github.com/patrickroocks/listcompr/issues/7)
 * allow `(x_1, ..., x_n)` short-cuts in nested expressions
 * allow `a_i` placeholders within nested vector and list expressions
+* improved warnings/error messages
+* fixed infinite recursion occurring when a NULL variable range was given
 
 # listcompr 0.3.0
 

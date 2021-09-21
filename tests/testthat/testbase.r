@@ -10,17 +10,24 @@ test_that("Trivial tests", {
   x <- 1
   expect_equal(gen.list(c(x, y), y = 2), list(c(1, 2)))
   expect_equal(gen.list(x, x = 2), list(2))
+  expect_equal(gen.list(a, a = 1, b = NULL), list(1))
 })
 
 
 test_that("Empty result tests", {
-  expect_warning(gen.vector(x + y, x = 1, y = 2:3, x > y), "no variable ranges detected, returning empty result")
-  expect_warning(gen.data.frame(c(a = 1, b = x), x = 2:3, x > 3), "no variable ranges detected, returning empty result")
+  expect_warning(gen.vector(x + y, x = 1, y = 2:3, x > y), "result is empty, conditions are too restrictive")
+  expect_warning(gen.data.frame(c(a = 1, b = x), x = 2:3, x > 3), "result is empty, conditions are too restrictive")
+  expect_warning(gen.list(a, a = NULL), "result is empty, variable range is NULL")
+  
+})
+
+test_that("Wrong parametrizations", {
+  expect_error(gen.list(x + y, y = x:2, x = 1:2), "could not evaluate variable range of 'y'")
+  expect_error(gen.list(a, a = list(1,2)), "unexpected value for variable 'a', expecting a vector of atomics")
 })
 
 test_that("Basic list and vector tests", {
   expect_equal(gen.list(x, x = 1:3), lapply(1:3, identity))
-  expect_error(gen.list(x + y, y = x:2, x = 1:2), "could not evaluate variable range of 'y'")
   
   y <- 1
   expect_equal(gen.vector(x + y, x = 1:3), 2:4)

@@ -23,7 +23,9 @@ adjust_limits <- function(vars, parent_frame) {
   
   # check if some of the variable names is contained as a symbol in the function
   contains_varnames <- function(expr, local_varnames) {
-    if (length(expr) == 1) {
+    if (is.null(expr)) {
+      return(FALSE)
+    } else if (length(expr) == 1) {
       return(is.symbol(expr) && as.character(expr) %in% local_varnames)
     } else {
       # assume function, evaluate arguments recursively
@@ -70,8 +72,11 @@ adjust_limits <- function(vars, parent_frame) {
       if (length(evaled_expr) == 1) { # another fixed val, add to fixed_vals AND final_vars
         fixed_vals[[varname]] <- evaled_expr
         final_vars[[varname]] <- evaled_expr
-        varnames <- setdiff(varnames, varname) # can be savely evaluated now!
+        varnames <- setdiff(varnames, varname) # can be safely evaluated now!
       } else {
+        if (!is.atomic(evaled_expr[1])) {
+          stop(paste0("unexpected value for variable '", varname, "', expecting a vector of atomics"), call. = FALSE);
+        }
         if (is.numeric(evaled_expr)) {
           # check for i=start:end (valid for start/stop)
           # evaluation in baseenv suffices, as operands are already evaluated!
@@ -392,8 +397,12 @@ gen_list_internal <- function(expr, l, output_format, name_str_expr, parent_fram
   vars         <- res_cart[["vars"]]
   conds        <- res_cart[["conds"]]
   
-  if (nrow(cartesian_df) == 0) {
-    warning("no variable ranges detected, returning empty result", call. = FALSE)
+  if (is.null(cartesian_df) || nrow(cartesian_df) == 0) {
+    if (is.null(cartesian_df)) {
+      warning("result is empty, variable range is NULL", call. = FALSE)
+    } else {
+      warning("result is empty, conditions are too restrictive", call. = FALSE)
+    }
     if      (is_format_df)  return(data.frame())
     else if (is_format_mtx) return(matrix())
     else if (is_format_lst) return(list())
