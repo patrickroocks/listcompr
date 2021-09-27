@@ -141,6 +141,12 @@ test_that("Named lists/vectors/dataframes tests", {
 
   expect_equal(gen.named.data.frame("x{n}", gen.named.data.frame(paste0(a_1, ..., a_3), sum(a_1, ..., a_3, n)[1], a_ = 1:2, byrow = TRUE), n = 1:2),
                structure(list("111" = 4:5, "211" = 5:6, "121" = 5:6, "221" = 6:7,      "112" = 5:6, "212" = 6:7, "122" = 6:7, "222" = 7:8), row.names = c("x1",  "x2"), class = "data.frame"))
+  
+  expect_equal(gen.data.frame(c(a, c), a = 1, c = 2),
+               structure(list(a = 1, c = 2), row.names = c(NA, -1L), class = "data.frame"))
+  
+  expect_equal(gen.data.frame(c(a = 1, a), a = 2),
+               structure(list(a = 1, V2 = 2), row.names = c(NA, -1L), class = "data.frame"))
 })
 
 test_that("three dots tests", {

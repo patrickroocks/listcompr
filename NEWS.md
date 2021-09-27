@@ -6,6 +6,7 @@
 * allow `a_i` placeholders within nested vector and list expressions
 * improved warnings/error messages
 * fixed infinite recursion occurring when a NULL variable range was given
+* fix auto-generated column names in a data frame for `c(a, c)`
 
 # listcompr 0.3.0
 

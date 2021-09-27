@@ -349,8 +349,8 @@ insert_inner_names <- function(expr, is_format_df) {
   # ensure that set names are persisted, quote(a = 1, a) stays at it is (final columns "a" and "V2" are intended)
   tmp_names <- as.character(expr)
   tmp_names[res_names != ""] <- res_names[res_names != ""]
+  tmp_names[1] <- "" # name of the composing function ("c", "list", ...)
   tmp_names[tmp_names != make.names(tmp_names, TRUE)] <- ""
-  tmp_names[1] <- ""
   res_names[res_names == ""] <- tmp_names[res_names == ""]
   
   # remaining names are V1, V2, ...
