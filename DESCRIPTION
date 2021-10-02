@@ -1,6 +1,6 @@
 Package: listcompr
 Version: 0.4.0
-Date: 2021-09-27
+Date: 2021-10-02
 Title: List Comprehension for R
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>

@@ -1,4 +1,4 @@
-# listcompr 0.4.0 (dev)
+# listcompr 0.4.0
 
 * renamed `expr` and `str` to `.expr` and `.str` in all the `gen....` functions to allow variables like `s` and `e`
   (fixes https://github.com/patrickroocks/listcompr/issues/7)

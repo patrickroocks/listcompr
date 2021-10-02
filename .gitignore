@@ -41,3 +41,5 @@ vignettes/*.pdf
 # meta dirs
 Meta
 doc
+/doc/
+/Meta/
